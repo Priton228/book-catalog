@@ -1,0 +1,143 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Оформление заказа - BookCatalog</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <h1 class="logo">📚 BookCatalog</h1>
+            <nav class="nav">
+                <a href="/" class="nav-link">Главная</a>
+                <a href="/catalog.html" class="nav-link">Каталог</a>
+                <a href="/orders.html" class="nav-link">Мои заказы</a>
+                <div id="auth-buttons">
+                    <button id="login-btn" class="btn btn-outline">Вход</button>
+                    <button id="register-btn" class="btn btn-primary">Регистрация</button>
+                </div>
+                <div id="user-menu" style="display: none;">
+                    <span id="user-name"></span>
+                    <button id="logout-btn" class="btn btn-outline">Выход</button>
+                    <button id="cart-btn" class="btn btn-primary">
+                        🛒 Корзина <span id="cart-count" style="display: none;">0</span>
+                    </button>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <div class="checkout-container">
+                <h2>Оформление заказа</h2>
+                
+                <div class="checkout-content">
+                    <!-- Левая колонка - информация о заказе -->
+                    <div class="checkout-order-info">
+                        <h3>Ваш заказ</h3>
+                        <div id="checkout-items">
+                            <!-- Товары будут загружены здесь -->
+                        </div>
+                        <div class="checkout-total">
+                            <strong>Итого: <span id="checkout-total-amount">0 ₽</span></strong>
+                        </div>
+                    </div>
+                    
+                    <!-- Правая колонка - форма оформления -->
+                    <div class="checkout-form-container">
+                        <form id="checkout-form" class="checkout-form">
+                            <h3>Данные для доставки</h3>
+                            
+                            <div class="form-group">
+                                <label for="full-name">ФИО *</label>
+                                <input type="text" id="full-name" name="full_name" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="phone">Телефон *</label>
+                                <input type="tel" id="phone" name="phone" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="email">Email *</label>
+                                <input type="email" id="email" name="email" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="shipping-address">Адрес доставки *</label>
+                                <textarea id="shipping-address" name="shipping_address" rows="3" required placeholder="Город, улица, дом, квартира"></textarea>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="shipping-method">Способ доставки</label>
+                                <select id="shipping-method" name="shipping_method">
+                                    <option value="courier">Курьерская доставка</option>
+                                    <option value="post">Почта России</option>
+                                    <option value="pickup">Самовывоз</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="payment-method">Способ оплаты</label>
+                                <select id="payment-method" name="payment_method">
+                                    <option value="card">Банковская карта</option>
+                                    <option value="cash">Наличные при получении</option>
+                                    <option value="online">Онлайн-оплата</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="customer-notes">Комментарий к заказу</label>
+                                <textarea id="customer-notes" name="customer_notes" rows="3" placeholder="Дополнительные пожелания"></textarea>
+                            </div>
+                            
+                            <div class="form-actions">
+                                <button type="button" id="back-to-cart" class="btn btn-outline">Назад к корзине</button>
+                                <button type="submit" class="btn btn-primary">Оформить заказ</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Модальные окна -->
+    <div id="login-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3>Вход в систему</h3>
+            <form id="login-form">
+                <input type="email" id="login-email" placeholder="Email" required>
+                <input type="password" id="login-password" placeholder="Пароль" required>
+                <button type="submit" class="btn btn-primary">Войти</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="register-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3>Регистрация</h3>
+            <form id="register-form">
+                <input type="text" id="register-name" placeholder="ФИО" required>
+                <input type="email" id="register-email" placeholder="Email" required>
+                <input type="password" id="register-password" placeholder="Пароль" required>
+                <button type="submit" class="btn btn-primary">Зарегистрироваться</button>
+            </form>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 Электронный каталог книг. Курсовая работа.</p>
+        </div>
+    </footer>
+
+    <script src="/js/auth.js"></script>
+    <script src="/js/checkout.js"></script>
+</body>
+</html>

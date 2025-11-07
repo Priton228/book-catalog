@@ -1,0 +1,111 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Электронный каталог книг</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <h1 class="logo">📚 BookCatalog</h1>
+            <nav class="nav">
+                <a href="/" class="nav-link">Главная</a>
+                <a href="/catalog.html" class="nav-link">Каталог</a>
+                <a href="/orders.html" class="nav-link">Мои заказы</a>
+                <div id="auth-buttons">
+                    <button id="login-btn" class="btn btn-outline">Вход</button>
+                    <button id="register-btn" class="btn btn-primary">Регистрация</button>
+                </div>
+                <div id="user-menu" style="display: none;">
+                    <span id="user-name"></span>
+                    <button id="logout-btn" class="btn btn-outline">Выход</button>
+                    <button id="cart-btn" class="btn btn-primary">
+                        🛒 Корзина <span id="cart-count" style="display: none;">0</span>
+                    </button>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <section class="hero">
+                <h2>Добро пожаловать в электронный каталог книг</h2>
+                <p>Найдите свою следующую любимую книгу и закажите печатную версию</p>
+                <a href="/catalog.html" class="btn btn-primary btn-large">Перейти к каталогу</a>
+            </section>
+        </div>
+    </main>
+
+    <!-- JS Fallback сообщение -->
+    <div id="js-warning" style="display: none; background: #ffeb3b; padding: 10px; margin: 10px; border-radius: 4px;">
+        ⚠️ JavaScript отключен или не загружается. Некоторые функции могут не работать.
+    </div>
+
+    <!-- Модальные окна -->
+    <div id="login-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3>Вход в систему</h3>
+            <form id="login-form">
+                <input type="email" id="login-email" placeholder="Email" required>
+                <input type="password" id="login-password" placeholder="Пароль" required>
+                <button type="submit" class="btn btn-primary">Войти</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="register-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3>Регистрация</h3>
+            <form id="register-form">
+                <input type="text" id="register-name" placeholder="ФИО" required>
+                <input type="email" id="register-email" placeholder="Email" required>
+                <input type="password" id="register-password" placeholder="Пароль" required>
+                <button type="submit" class="btn btn-primary">Зарегистрироваться</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="cart-modal" class="modal">
+        <div class="modal-content" style="max-width: 600px;">
+            <span class="close">&times;</span>
+            <h3>Корзина покупок</h3>
+            <div id="cart-items"></div>
+            <div class="cart-total">
+                <strong>Итого: <span id="cart-total">0 ₽</span></strong>
+            </div>
+            <div class="cart-actions">
+                <button id="checkout-btn" class="btn btn-primary">Оформить заказ</button>
+                <button class="btn btn-outline close-cart">Продолжить покупки</button>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 Электронный каталог книг. Курсовая работа.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Проверка загрузки JS
+        console.log('✅ JavaScript работает');
+        
+        // Fallback: если JS не загрузится через 3 секунды - покажем предупреждение
+        setTimeout(() => {
+            if (typeof initializeEventListeners === 'undefined') {
+                document.getElementById('js-warning').style.display = 'block';
+                console.error('❌ JS files not loaded');
+            }
+        }, 3000);
+    </script>
+
+    <script src="/js/auth.js"></script>
+    <script src="/js/cart.js"></script>
+    <script src="/js/main.js"></script>
+</body>
+</html>
