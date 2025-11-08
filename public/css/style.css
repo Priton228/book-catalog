@@ -193,6 +193,12 @@ body {
     line-height: 1.4;
 }
 
+.book-isbn {
+    margin-top: 0.4rem;
+    font-size: 0.8rem;
+    color: #8a8f99;
+}
+
 .book-actions {
     margin-top: 1rem;
 }
@@ -204,8 +210,8 @@ body {
 }
 
 .book-cover {
-    width: 160px;
-    height: 240px;
+    width: 120px;
+    height: 180px;
     object-fit: cover;
     border-radius: 6px;
     background-color: #eee;
@@ -505,6 +511,150 @@ body {
     z-index: 10000;
     max-width: 300px;
     animation: slideIn 0.3s ease;
+}
+
+/* --- Admin table header alignment and sort caret/menu --- */
+.admin-table th {
+  vertical-align: middle;
+  text-align: left;
+}
+.admin-table th .th-inner {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  position: relative;
+  white-space: nowrap;
+}
+.admin-table th .th-label {
+  line-height: 1.2;
+}
+.admin-table th .sort-caret {
+  cursor: pointer;
+  font-size: 12px;
+  line-height: 1;
+}
+.admin-table th .sort-menu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background: #fff;
+  border: 1px solid #ccc;
+  padding: 6px;
+  z-index: 10;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  min-width: 220px;
+}
+.admin-table th .sort-menu button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 4px 8px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+}
+.admin-table th .sort-menu button:hover {
+  background: #f0f0f0;
+}
+
+/* Dropdown filter list styles */
+.admin-table th .sort-menu .filter-list {
+  /* Прокрутка появляется при списке > ~5 пунктов */
+  max-height: 200px;
+  overflow-y: auto;
+  margin-bottom: 6px;
+}
+.admin-table th .sort-menu .filter-item {
+  display: block;
+  font-weight: normal;
+  font-size: 12px;
+  line-height: 1.4;
+  padding: 2px 0;
+}
+.admin-table th .sort-menu .filter-item input {
+  margin-right: 6px;
+}
+.admin-table th .sort-menu .filters-empty {
+  display: block;
+  font-weight: normal;
+  color: #888;
+  padding: 4px 0;
+  font-size: 12px;
+}
+.admin-table th .sort-menu .filter-actions {
+  display: flex;
+  gap: 6px;
+}
+.admin-table th .sort-menu .filter-actions .filter-apply {
+  background: #3498db;
+  color: #fff;
+  border-radius: 3px;
+  display: block;
+  width: 100%;
+  padding: 6px 8px;
+  border: none;
+  cursor: pointer;
+}
+.admin-table th .sort-menu .filter-actions .filter-apply:hover { background: #2980b9; }
+
+/* Поиск в выпадающем меню фильтров */
+.admin-table th .sort-menu .filter-search {
+  padding: 6px 8px;
+  border-bottom: 1px solid #eee;
+  margin-bottom: 6px;
+}
+.admin-table th .sort-menu .filter-search input[type="text"] {
+  width: 100%;
+  font-size: 12px;
+  padding: 6px 8px;
+  border: 1px solid #d0d7de;
+  border-radius: 4px;
+}
+
+/* Admin Books table fixed layout */
+.books-table {
+  table-layout: fixed;
+  width: 100%;
+}
+.books-table th,
+.books-table td {
+  vertical-align: top;
+}
+/* Column widths: ID, Cover, Title, Author, Genre, Year, Publisher, Price, Description, Actions */
+.books-table th:nth-child(1), .books-table td:nth-child(1) { width: 45px; white-space: nowrap; }
+.books-table th:nth-child(2), .books-table td:nth-child(2) { width: 90px; }
+.books-table th:nth-child(3), .books-table td:nth-child(3) { width: 160px; white-space: normal; word-break: break-word; }
+.books-table th:nth-child(4), .books-table td:nth-child(4) { width: 130px; white-space: normal; word-break: break-word; }
+.books-table th:nth-child(5), .books-table td:nth-child(5) { width: 150px; white-space: normal; word-break: break-word; }
+.books-table th:nth-child(6), .books-table td:nth-child(6) { width: 70px; white-space: nowrap; }
+.books-table th:nth-child(7), .books-table td:nth-child(7) { width: 140px; white-space: normal; word-break: break-word; }
+.books-table th:nth-child(8), .books-table td:nth-child(8) { width: 85px; white-space: nowrap; }
+.books-table th:nth-child(9), .books-table td:nth-child(9) { width: auto; white-space: normal; word-break: break-word; }
+.books-table th:nth-child(10), .books-table td:nth-child(10) { width: 120px; }
+.books-table .book-cover {
+  width: 70px;
+  height: 105px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+.books-table .admin-actions { flex-direction: column; align-items: flex-start; gap: 6px; }
+/* Вертикальные действия в админ-таблицах */
+.admin-table .admin-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+/* Orange edit buttons for authors and genres */
+.btn-small.btn-edit-orange {
+  background: #f39c12;
+  color: white;
+}
+.btn-small.btn-edit-orange:hover {
+  filter: brightness(0.95);
 }
 
 /* Responsive */

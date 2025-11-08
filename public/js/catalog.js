@@ -17,15 +17,22 @@ function initializeCatalogEventListeners() {
         console.log('Apply filters button listener added');
     }
     
-    // Поиск по Enter
+    // Живой поиск: применяем ввёденный текст без Enter (дебаунс)
     const searchInput = document.getElementById('search-input');
     if (searchInput) {
+        let debounceTimer;
+        searchInput.addEventListener('input', function() {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(loadBooks, 250);
+        });
+        // Сохраняем поддержку Enter для удобства
         searchInput.addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
+                e.preventDefault();
                 loadBooks();
             }
         });
-        console.log('Search input listener added');
+        console.log('Live search listener added');
     }
 }
 
@@ -99,6 +106,7 @@ function displayBooks(books) {
         const coverHtml = `
             <div class="book-cover-wrap">
                 <img src="${coverSrc}" alt="Обложка ${safeTitle}" class="book-cover" onerror="this.onerror=null;this.src='${defaultCover}';"/>
+                <div class="book-isbn">${book.isbn ? `ISBN: ${escapeHtml(book.isbn)}` : 'ISBN не указан'}</div>
             </div>
         `;
         
@@ -182,26 +190,30 @@ async function loadFilters() {
         const genresResponse = await fetch('/api/genres');
         const genresData = await genresResponse.json();
         
-        if (genresResponse.ok) {
+        if (genresResponse.ok && genresData.genres && Array.isArray(genresData.genres)) {
             const genreSelect = document.getElementById('genre-filter');
             genreSelect.innerHTML = '<option value="">Все жанры</option>' +
                 genresData.genres.map(genre => 
                     `<option value="${genre.id}">${escapeHtml(genre.name)}</option>`
                 ).join('');
             console.log('Genres loaded:', genresData.genres.length);
+        } else {
+            console.warn('No genres data available or invalid format');
         }
 
         // Загружаем авторы
         const authorsResponse = await fetch('/api/authors');
         const authorsData = await authorsResponse.json();
         
-        if (authorsResponse.ok) {
+        if (authorsResponse.ok && authorsData.authors && Array.isArray(authorsData.authors)) {
             const authorSelect = document.getElementById('author-filter');
             authorSelect.innerHTML = '<option value="">Все авторы</option>' +
                 authorsData.authors.map(author => 
                     `<option value="${author.id}">${escapeHtml(author.name)}</option>`
                 ).join('');
             console.log('Authors loaded:', authorsData.authors.length);
+        } else {
+            console.warn('No authors data available or invalid format');
         }
     } catch (error) {
         console.error('Error loading filters:', error);

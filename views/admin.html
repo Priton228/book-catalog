@@ -16,14 +16,14 @@
             background: #2c3e50;
             color: white;
             padding: 20px;
-            margin: -20px -20px 20px -20px;
+            margin: -20px -20px 20px -20px; /* растягиваем баннер на всю ширину контейнера */
             border-radius: 8px 8px 0 0;
         }
         
         .admin-nav {
             display: flex;
             gap: 10px;
-            margin-bottom: 20px;
+            margin: 0 -20px 20px -20px; /* выравниваем левую грань с баннером */
             flex-wrap: wrap;
         }
         
@@ -50,6 +50,7 @@
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin: 0 -20px 20px -20px; /* ширина как у баннера */
         }
         
         .admin-table {
@@ -210,15 +211,14 @@
             <h1>Панель администратора</h1>
             <p>Управление электронным каталогом книг</p>
         </div>
-        
         <nav class="admin-nav">
             <button onclick="showSection('dashboard')" id="nav-dashboard" class="active">Статистика</button>
             <button onclick="showSection('users')" id="nav-users">Пользователи</button>
             <button onclick="showSection('books')" id="nav-books">Книги</button>
-            <button onclick="showSection('orders')" id="nav-orders">Заказы</button>
             <button onclick="showSection('authors')" id="nav-authors">Авторы</button>
             <button onclick="showSection('genres')" id="nav-genres">Жанры</button>
-            <button onclick="logout()">🚪 Выход</button>
+            <button onclick="showSection('orders')" id="nav-orders">Заказы</button>
+            <button onclick="logout()" id="nav-logout">Выход</button>
         </nav>
         
         <div id="message-container"></div>
@@ -458,6 +458,7 @@
                 </div>
             </div>
         </div>
+
     </div>
     
     <script src="/js/auth.js"></script>

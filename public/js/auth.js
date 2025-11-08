@@ -13,7 +13,7 @@ function initializeEventListeners() {
     // Кнопки авторизации
     document.getElementById('login-btn')?.addEventListener('click', showLogin);
     document.getElementById('register-btn')?.addEventListener('click', showRegister);
-    document.getElementById('logout-btn')?.addEventListener('click', logout);
+    document.getElementById('logout-btn')?.addEventListener('click', showLogoutConfirm);
     document.getElementById('cart-btn')?.addEventListener('click', showCart);
     
     // Закрытие модальных окон
@@ -177,6 +177,7 @@ function logout() {
     localStorage.removeItem('cart');
     updateAuthUI();
     showMessage('Вы вышли из системы', 'info');
+    window.location.href = '/';
 }
 
 // Показать сообщение
@@ -231,4 +232,49 @@ function escapeHtml(unsafe) {
         .replace(/>/g, "&gt;")
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#039;");
+}
+// Модальное подтверждение выхода (легкое всплывающее окно в правом верхнем углу)
+function showLogoutConfirm(event) {
+    event?.preventDefault();
+    // Если уже показано — не создаем повторно
+    if (document.getElementById('logout-confirm')) return;
+
+    const wrap = document.createElement('div');
+    wrap.id = 'logout-confirm';
+    wrap.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #fff;
+        border: 1px solid #d0d7de;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+        border-radius: 6px;
+        padding: 12px 14px;
+        z-index: 10001;
+        max-width: 300px;
+        font-family: Arial, sans-serif;
+    `;
+
+    const title = document.createElement('div');
+    title.textContent = 'Выйти из аккаунта?';
+    title.style.cssText = 'font-weight: 600; margin-bottom: 8px;';
+
+    const actions = document.createElement('div');
+    actions.style.cssText = 'display:flex; gap:8px; justify-content:flex-end;';
+
+    const yesBtn = document.createElement('button');
+    yesBtn.textContent = 'Да';
+    yesBtn.style.cssText = 'background:#e74c3c;color:#fff;border:none;border-radius:4px;padding:6px 10px;cursor:pointer;';
+    yesBtn.addEventListener('click', () => { wrap.remove(); logout(); });
+
+    const noBtn = document.createElement('button');
+    noBtn.textContent = 'Нет';
+    noBtn.style.cssText = 'background:#95a5a6;color:#fff;border:none;border-radius:4px;padding:6px 10px;cursor:pointer;';
+    noBtn.addEventListener('click', () => wrap.remove());
+
+    actions.appendChild(yesBtn);
+    actions.appendChild(noBtn);
+    wrap.appendChild(title);
+    wrap.appendChild(actions);
+    document.body.appendChild(wrap);
 }

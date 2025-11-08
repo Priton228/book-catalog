@@ -1,4 +1,4 @@
-﻿const pool = require('../config/database');
+const pool = require('../config/database');
 
 const getAllBooks = async (req, res) => {
   try {
@@ -33,7 +33,7 @@ const getAllBooks = async (req, res) => {
     }
 
     if (search) {
-      conditions.push(`(b.title ILIKE $${paramCount} OR a.name ILIKE $${paramCount})`);
+      conditions.push(`(b.title ILIKE $${paramCount} OR a.name ILIKE $${paramCount} OR b.isbn ILIKE $${paramCount})`);
       values.push(`%${search}%`);
       paramCount++;
     }
