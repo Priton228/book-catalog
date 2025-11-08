@@ -1,6 +1,6 @@
 ﻿// Загрузка заказов при открытии страницы
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('📋 Orders page loaded');
+    console.log('Orders page loaded');
     initializeOrdersEventListeners();
     checkAuthAndLoadOrders();
 });
@@ -20,7 +20,7 @@ function checkAuthAndLoadOrders() {
 
 // Загрузка заказов пользователя
 async function loadOrders() {
-    console.log('📦 Loading orders...');
+    console.log('Loading orders...');
     
     document.getElementById('orders-loading').style.display = 'block';
     document.getElementById('no-orders').style.display = 'none';
@@ -35,19 +35,19 @@ async function loadOrders() {
         });
 
         const data = await response.json();
-        console.log('📦 Orders response:', data);
+        console.log('Orders response:', data);
 
         document.getElementById('orders-loading').style.display = 'none';
 
         if (response.ok) {
             displayOrders(data.orders);
         } else {
-            console.error('❌ Error loading orders:', data.error);
+            console.error('Error loading orders:', data.error);
             showMessage('Ошибка загрузки заказов: ' + data.error, 'error');
         }
     } catch (error) {
         document.getElementById('orders-loading').style.display = 'none';
-        console.error('❌ Connection error:', error);
+        console.error('Connection error:', error);
         showMessage('Ошибка соединения', 'error');
     }
 }
@@ -57,19 +57,19 @@ function displayOrders(orders) {
     const container = document.getElementById('orders-container');
     const noOrders = document.getElementById('no-orders');
 
-    console.log('📊 Displaying orders:', orders);
+    console.log('Displaying orders:', orders);
 
     if (!orders || orders.length === 0) {
         container.innerHTML = '';
         noOrders.style.display = 'block';
-        console.log('📭 No orders to display');
+        console.log('No orders to display');
         return;
     }
 
     noOrders.style.display = 'none';
 
     container.innerHTML = orders.map(order => {
-        console.log('📦 Processing order:', order);
+        console.log('Processing order:', order);
         return `
         <div class="order-card">
             <div class="order-header">
@@ -117,7 +117,7 @@ function displayOrders(orders) {
         `;
     }).join('');
     
-    console.log('✅ Orders displayed successfully');
+    console.log('Orders displayed successfully');
 }
 
 // Получение текста статуса заказа
@@ -134,5 +134,5 @@ function getStatusText(status) {
 
 // Инициализация обработчиков событий
 function initializeOrdersEventListeners() {
-    console.log('🔧 Initializing orders event listeners');
+    console.log('Initializing orders event listeners');
 }

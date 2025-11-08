@@ -40,7 +40,7 @@ function initializeCatalogEventListeners() {
 async function loadBooks() {
     console.log('Loading books...');
     
-    const search = document.getElementById('search-input').value;
+    const search = document.getElementById('search-input').value.trim();
     const genreId = document.getElementById('genre-filter').value;
     const authorId = document.getElementById('author-filter').value;
 
@@ -98,7 +98,7 @@ function displayBooks(books) {
         const safeTitle = escapeHtml(book.title);
         const safeAuthor = escapeHtml(book.author_name || 'Автор не указан');
         const safeGenre = escapeHtml(book.genre_name || 'Жанр не указан');
-        const shortDesc = book.description ? (book.description.length > 50 ? book.description.substring(0, 50) + '...' : book.description) : '';
+        const shortDesc = book.description ? (book.description.length > 80 ? book.description.substring(0, 80) + '...' : book.description) : '';
         const safeShortDesc = escapeHtml(shortDesc);
         const safeFullDesc = escapeHtml(book.description || '');
         const defaultCover = 'https://i.pinimg.com/474x/e2/93/05/e29305e0ee7c3d1ef31ce6f234e194f8.jpg';
@@ -106,7 +106,6 @@ function displayBooks(books) {
         const coverHtml = `
             <div class="book-cover-wrap">
                 <img src="${coverSrc}" alt="Обложка ${safeTitle}" class="book-cover" onerror="this.onerror=null;this.src='${defaultCover}';"/>
-                <div class="book-isbn">${book.isbn ? `ISBN: ${escapeHtml(book.isbn)}` : 'ISBN не указан'}</div>
             </div>
         `;
         
@@ -122,7 +121,7 @@ function displayBooks(books) {
                 <div class="book-description">
                     <span class="desc-short">${safeShortDesc}</span>
                     <span class="desc-full" style="display:none;">${safeFullDesc}</span>
-                    <button class="btn btn-link toggle-description" data-book-id="${book.id}">Показать полностью</button>
+                    ${book.description.length > 80 ? `<button class="btn btn-link toggle-description" data-book-id="${book.id}">Показать полностью</button>` : ''}
                 </div>
             ` : ''}
             <div class="book-actions">

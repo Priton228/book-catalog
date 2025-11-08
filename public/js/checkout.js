@@ -1,6 +1,6 @@
 ﻿// Страница оформления заказа
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🛒 Checkout page loaded');
+    console.log('Checkout page loaded');
     initializeCheckoutEventListeners();
     loadCheckoutData();
     prefillUserData();
@@ -12,7 +12,7 @@ function initializeCheckoutEventListeners() {
     const checkoutForm = document.getElementById('checkout-form');
     if (checkoutForm) {
         checkoutForm.addEventListener('submit', handleCheckoutSubmit);
-        console.log('✅ Checkout form listener added');
+        console.log('Checkout form listener added');
     }
     
     // Кнопка "Назад к корзине"
@@ -21,7 +21,7 @@ function initializeCheckoutEventListeners() {
         backToCartBtn.addEventListener('click', function() {
             window.location.href = '/catalog.html';
         });
-        console.log('✅ Back to cart button listener added');
+        console.log('Back to cart button listener added');
     }
 }
 
@@ -53,7 +53,7 @@ function loadCheckoutData() {
     const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     checkoutTotal.textContent = total.toFixed(2) + ' ₽';
     
-    console.log('✅ Checkout data loaded');
+    console.log('Checkout data loaded');
 }
 
 // Предзаполнение данных пользователя
@@ -65,13 +65,13 @@ function prefillUserData() {
         document.getElementById('email').value = currentUser.email || '';
     }
     
-    console.log('✅ User data prefilled');
+    console.log('User data prefilled');
 }
 
 // Обработка отправки формы оформления заказа
 async function handleCheckoutSubmit(e) {
     e.preventDefault();
-    console.log('💳 Processing checkout...');
+    console.log('Processing checkout...');
     
     const cart = JSON.parse(localStorage.getItem('cart')) || [];
     
@@ -107,7 +107,7 @@ async function handleCheckoutSubmit(e) {
             customer_notes: `Контактные данные: ${formData.full_name}, тел.: ${formData.phone}, email: ${formData.email}. Способ оплаты: ${getPaymentMethodText(formData.payment_method)}. ${formData.customer_notes || ''}`
         };
 
-        console.log('📦 Sending order:', orderData);
+        console.log('Sending order:', orderData);
 
         const response = await fetch('/api/orders', {
             method: 'POST',
@@ -119,7 +119,7 @@ async function handleCheckoutSubmit(e) {
 
         if (response.ok) {
             showMessage('Заказ успешно создан!', 'success');
-            console.log('✅ Order created:', data.order);
+            console.log('Order created:', data.order);
             
             // Очищаем корзину
             localStorage.removeItem('cart');
@@ -130,11 +130,11 @@ async function handleCheckoutSubmit(e) {
             }, 1000);
             
         } else {
-            console.error('❌ Order creation failed:', data.error);
+            console.error('Order creation failed:', data.error);
             showMessage(data.error, 'error');
         }
     } catch (error) {
-        console.error('❌ Checkout error:', error);
+        console.error('Checkout error:', error);
         showMessage('Ошибка при создании заказа: ' + error.message, 'error');
     }
 }
@@ -169,7 +169,7 @@ function showOrderConfirmation(order, formData) {
 function getShippingMethodText(method) {
     const methods = {
         'courier': 'Курьерская доставка',
-        'post': 'Почта России',
+        'post': 'Белпочта',
         'pickup': 'Самовывоз'
     };
     return methods[method] || method;

@@ -33,8 +33,13 @@ const getAllBooks = async (req, res) => {
     }
 
     if (search) {
-      conditions.push(`(b.title ILIKE $${paramCount} OR a.name ILIKE $${paramCount} OR b.isbn ILIKE $${paramCount})`);
-      values.push(`%${search}%`);
+      const searchText = String(search).trim();
+      // Убираем поиск по ISBN: оставляем только по названию и автору
+      conditions.push(`(
+        b.title ILIKE $${paramCount}
+        OR a.name ILIKE $${paramCount}
+      )`);
+      values.push(`%${searchText}%`);
       paramCount++;
     }
 

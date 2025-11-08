@@ -451,7 +451,7 @@ function displayUsers(users) {
         .sort((a,b)=>String(a).localeCompare(String(b),'ru',{sensitivity:'base'}));
 
     container.innerHTML = `
-        <table class="admin-table books-table">
+        <table class="admin-table users-table">
             <thead>
                 <tr>
                     <th><div class="th-inner"><span class="th-label">ID</span>
@@ -803,7 +803,7 @@ function displayBooks(books) {
         const safeTitle = (book.title || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
         const safeAuthor = (book.author_name || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
         const safeGenre = (book.genre_name || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-        const shortDesc = book.description ? (book.description.length > 50 ? book.description.substring(0, 50) + '...' : book.description) : '';
+    const shortDesc = book.description ? (book.description.length > 80 ? book.description.substring(0, 80) + '...' : book.description) : '';
         const safeShortDesc = shortDesc.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
         const safeFullDesc = (book.description || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
         const defaultCover = 'https://i.pinimg.com/474x/e2/93/05/e29305e0ee7c3d1ef31ce6f234e194f8.jpg';
@@ -828,8 +828,6 @@ function displayBooks(books) {
                 ${book.description ? `
                     <div class="desc-wrap">
                         <span class="desc-short">${safeShortDesc}</span>
-                        <span class="desc-full" style="display:none;">${safeFullDesc}</span>
-                        <button class="btn-small btn-toggle-desc" data-book-id="${book.id}">Показать полностью</button>
                     </div>
                 ` : ''}
             </td>
@@ -841,19 +839,7 @@ function displayBooks(books) {
         booksList.appendChild(bookRow);
     });
 
-    // Обработчики для раскрытия описания
-    booksList.querySelectorAll('.btn-toggle-desc').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const wrap = this.closest('.desc-wrap');
-            if (!wrap) return;
-            const shortEl = wrap.querySelector('.desc-short');
-            const fullEl = wrap.querySelector('.desc-full');
-            const isHidden = fullEl.style.display === 'none';
-            fullEl.style.display = isHidden ? 'inline' : 'none';
-            shortEl.style.display = isHidden ? 'none' : 'inline';
-            this.textContent = isHidden ? 'Свернуть' : 'Показать полностью';
-        });
-    });
+    // Кнопка раскрытия описания удалена в админке вкладки "Книги"
     attachSortHandlers(container, 'books');
 }
 

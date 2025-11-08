@@ -43,7 +43,24 @@ function updateAuthUI() {
     if (authToken && currentUser) {
         if (authButtons) authButtons.style.display = 'none';
         if (userMenu) userMenu.style.display = 'flex';
-        if (userName) userName.textContent = currentUser.full_name || currentUser.email;
+        if (userName) {
+            let displayName = '';
+            if (currentUser.full_name && typeof currentUser.full_name === 'string') {
+                const parts = currentUser.full_name.trim().split(/\s+/).filter(Boolean);
+                if (parts.length >= 2) {
+                    displayName = parts[1]; // имя во втором слове (Фамилия Имя ...)
+                } else if (parts.length === 1) {
+                    displayName = parts[0];
+                }
+            }
+            if (!displayName && currentUser.email && typeof currentUser.email === 'string') {
+                displayName = currentUser.email.split('@')[0];
+            }
+            if (!displayName) {
+                displayName = 'Пользователь';
+            }
+            userName.textContent = displayName;
+        }
         
         // Показать кнопку админа только для администраторов
         if (adminBtn) {

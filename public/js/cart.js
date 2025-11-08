@@ -1,11 +1,11 @@
 ﻿// Корзина покупок - ГЛОБАЛЬНЫЕ ФУНКЦИИ
 window.cart = JSON.parse(localStorage.getItem('cart')) || [];
 
-console.log('🛒 Cart.js loaded');
+console.log('Cart.js loaded');
 
 // Инициализация корзины при загрузке страницы
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🛒 Initializing cart...');
+    console.log('Initializing cart...');
     initializeCartEventListeners();
     updateCartIcon();
 });
@@ -15,7 +15,7 @@ function initializeCartEventListeners() {
     const checkoutBtn = document.getElementById('checkout-btn');
     if (checkoutBtn) {
         checkoutBtn.addEventListener('click', window.checkout);
-        console.log('✅ Checkout button listener added');
+        console.log('Checkout button listener added');
     }
 }
 
@@ -33,7 +33,7 @@ window.addToCart = function(bookId, bookTitle, bookPrice, bookAuthor) {
     
     if (existingItem) {
         existingItem.quantity += 1;
-        console.log('📦 Increased quantity for:', bookTitle);
+        console.log('Increased quantity for:', bookTitle);
     } else {
         window.cart.push({
             bookId: bookId,
@@ -42,7 +42,7 @@ window.addToCart = function(bookId, bookTitle, bookPrice, bookAuthor) {
             price: bookPrice,
             quantity: 1
         });
-        console.log('🆕 Added new item to cart:', bookTitle);
+        console.log('Added new item to cart:', bookTitle);
     }
     
     window.updateCart();
@@ -54,7 +54,7 @@ window.updateCart = function() {
     localStorage.setItem('cart', JSON.stringify(window.cart));
     window.updateCartIcon();
     window.updateCartDisplay();
-    console.log('🔄 Cart updated. Items:', window.cart.length);
+    console.log('Cart updated. Items:', window.cart.length);
 };
 
 // Обновление иконки корзины
@@ -65,7 +65,7 @@ window.updateCartIcon = function() {
     if (cartCount) {
         cartCount.textContent = totalItems;
         cartCount.style.display = totalItems > 0 ? 'inline' : 'none';
-        console.log('📊 Cart count updated:', totalItems);
+        console.log('Cart count updated:', totalItems);
     }
 };
 
@@ -75,7 +75,7 @@ window.updateCartDisplay = function() {
     const cartTotal = document.getElementById('cart-total');
     
     if (!cartItems) {
-        console.log('❌ Cart items element not found');
+        console.log('Cart items element not found');
         return;
     }
     
@@ -106,7 +106,7 @@ window.updateCartDisplay = function() {
         
         const total = window.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
         if (cartTotal) cartTotal.textContent = total.toFixed(2) + ' ₽';
-        console.log('💰 Cart total:', total);
+        console.log('Cart total:', total);
     }
 };
 
@@ -139,7 +139,7 @@ function addCartItemListeners() {
 
 // ГЛОБАЛЬНАЯ функция обновления количества
 window.updateCartItem = function(bookId, change) {
-    console.log('🔄 Updating cart item:', bookId, change);
+    console.log('Updating cart item:', bookId, change);
     
     const item = window.cart.find(item => item.bookId == bookId);
     if (item) {
@@ -154,7 +154,7 @@ window.updateCartItem = function(bookId, change) {
 
 // ГЛОБАЛЬНАЯ функция удаления из корзины
 window.removeFromCart = function(bookId) {
-    console.log('🗑️ Removing from cart:', bookId);
+    console.log('Removing from cart:', bookId);
     
     window.cart = window.cart.filter(item => item.bookId != bookId);
     window.updateCart();
@@ -163,7 +163,7 @@ window.removeFromCart = function(bookId) {
 
 // ГЛОБАЛЬНАЯ функция оформления заказа
 window.checkout = function() {
-    console.log('💳 Starting checkout...');
+    console.log('Starting checkout...');
     
     if (window.cart.length === 0) {
         window.showMessage('Корзина пуста', 'warning');
@@ -177,6 +177,6 @@ window.checkout = function() {
 // ГЛОБАЛЬНАЯ функция проверки авторизации
 window.isAuthenticated = function() {
     const isAuth = localStorage.getItem('authToken') !== null;
-    console.log('🔐 Authentication check:', isAuth);
+    console.log('Authentication check:', isAuth);
     return isAuth;
 };
