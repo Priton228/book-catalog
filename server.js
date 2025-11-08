@@ -1,4 +1,4 @@
-﻿const express = require('express');
+const express = require('express');
 const cors = require('cors');
 const path = require('path');
 require('dotenv').config();
@@ -9,6 +9,7 @@ const orderRoutes = require('./routes/orders');
 const userRoutes = require('./routes/users');
 const authorRoutes = require('./routes/authors');
 const genreRoutes = require('./routes/genres');
+const adminRoutes = require('./routes/admin');
 
 const app = express();
 
@@ -27,6 +28,7 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/authors', authorRoutes);
 app.use('/api/genres', genreRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Serve HTML pages
 app.get('/', (req, res) => {
@@ -43,6 +45,10 @@ app.get('/orders.html', (req, res) => {
 
 app.get('/checkout.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'checkout.html'));
+});
+
+app.get('/admin.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'admin.html'));
 });
 
 // Health check

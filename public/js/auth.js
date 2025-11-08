@@ -1,4 +1,4 @@
-﻿// Токен аутентификации
+// Токен аутентификации
 let authToken = localStorage.getItem('authToken');
 let currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
 
@@ -38,15 +38,25 @@ function updateAuthUI() {
     const authButtons = document.getElementById('auth-buttons');
     const userMenu = document.getElementById('user-menu');
     const userName = document.getElementById('user-name');
+    const adminBtn = document.getElementById('admin-btn');
 
     if (authToken && currentUser) {
-        authButtons.style.display = 'none';
-        userMenu.style.display = 'flex';
-        userName.textContent = currentUser.full_name || currentUser.email;
-        updateCartIcon();
+        if (authButtons) authButtons.style.display = 'none';
+        if (userMenu) userMenu.style.display = 'flex';
+        if (userName) userName.textContent = currentUser.full_name || currentUser.email;
+        
+        // Показать кнопку админа только для администраторов
+        if (adminBtn) {
+            adminBtn.style.display = currentUser.role === 'admin' ? 'inline-block' : 'none';
+            adminBtn.onclick = () => window.location.href = '/admin.html';
+        }
+        
+        if (typeof updateCartIcon === 'function') {
+            updateCartIcon();
+        }
     } else {
-        authButtons.style.display = 'flex';
-        userMenu.style.display = 'none';
+        if (authButtons) authButtons.style.display = 'flex';
+        if (userMenu) userMenu.style.display = 'none';
     }
 }
 
