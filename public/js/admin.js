@@ -390,11 +390,13 @@ function displayBooks(books) {
             <thead>
                 <tr>
                     <th>ID</th>
+                    <th>Обложка</th>
                     <th>Название</th>
                     <th>Автор</th>
                     <th>Жанр</th>
                     <th>Год</th>
                     <th>Цена</th>
+                    <th>Описание</th>
                     <th>Действия</th>
                 </tr>
             </thead>
@@ -406,19 +408,52 @@ function displayBooks(books) {
     const booksList = document.getElementById('booksList');
     books.forEach(book => {
         const bookRow = document.createElement('tr');
+        const safeTitle = (book.title || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        const safeAuthor = (book.author_name || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        const safeGenre = (book.genre_name || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        const shortDesc = book.description ? (book.description.length > 120 ? book.description.substring(0, 120) + '...' : book.description) : '';
+        const safeShortDesc = shortDesc.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        const safeFullDesc = (book.description || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        const defaultCover = 'https://i.pinimg.com/474x/e2/93/05/e29305e0ee7c3d1ef31ce6f234e194f8.jpg';
+        const coverSrc = book.cover_image ? book.cover_image : defaultCover;
+        const coverCell = `<img src="${coverSrc}" alt="Обложка" class="book-cover" onerror="this.onerror=null;this.src='${defaultCover}';"/>`;
         bookRow.innerHTML = `
             <td>${book.id}</td>
-            <td>${book.title}</td>
-            <td>${book.author_name || ''}</td>
-            <td>${book.genre_name || ''}</td>
+            <td>${coverCell}</td>
+            <td>${safeTitle}</td>
+            <td>${safeAuthor}</td>
+            <td>${safeGenre}</td>
             <td>${book.publication_year || ''}</td>
             <td>${book.price} руб.</td>
+            <td>
+                ${book.description ? `
+                    <div class="desc-wrap">
+                        <span class="desc-short">${safeShortDesc}</span>
+                        <span class="desc-full" style="display:none;">${safeFullDesc}</span>
+                        <button class="btn-small btn-toggle-desc" data-book-id="${book.id}">Показать полностью</button>
+                    </div>
+                ` : ''}
+            </td>
             <td class="admin-actions">
                 <button onclick="editBook(${book.id})" class="btn-small btn-edit">Редактировать</button>
                 <button onclick="deleteBook(${book.id})" class="btn-small btn-delete">Удалить</button>
             </td>
         `;
         booksList.appendChild(bookRow);
+    });
+
+    // Обработчики для раскрытия описания
+    booksList.querySelectorAll('.btn-toggle-desc').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const wrap = this.closest('.desc-wrap');
+            if (!wrap) return;
+            const shortEl = wrap.querySelector('.desc-short');
+            const fullEl = wrap.querySelector('.desc-full');
+            const isHidden = fullEl.style.display === 'none';
+            fullEl.style.display = isHidden ? 'inline' : 'none';
+            shortEl.style.display = isHidden ? 'none' : 'inline';
+            this.textContent = isHidden ? 'Свернуть' : 'Показать полностью';
+        });
     });
 }
 

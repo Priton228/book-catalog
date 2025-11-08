@@ -1,6 +1,6 @@
-﻿// Загрузка книг при открытии страницы
+// Загрузка книг при открытии страницы
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('📚 Catalog.js loaded');
+    console.log('Catalog.js loaded');
     initializeCatalogEventListeners();
     loadBooks();
     loadFilters();
@@ -14,7 +14,7 @@ function initializeCatalogEventListeners() {
     const applyFiltersBtn = document.getElementById('apply-filters');
     if (applyFiltersBtn) {
         applyFiltersBtn.addEventListener('click', loadBooks);
-        console.log('✅ Apply filters button listener added');
+        console.log('Apply filters button listener added');
     }
     
     // Поиск по Enter
@@ -25,13 +25,13 @@ function initializeCatalogEventListeners() {
                 loadBooks();
             }
         });
-        console.log('✅ Search input listener added');
+        console.log('Search input listener added');
     }
 }
 
 // Загрузка книг с фильтрами
 async function loadBooks() {
-    console.log('📖 Loading books...');
+    console.log('Loading books...');
     
     const search = document.getElementById('search-input').value;
     const genreId = document.getElementById('genre-filter').value;
@@ -58,22 +58,22 @@ async function loadBooks() {
         document.getElementById('loading').style.display = 'none';
 
         if (response.ok) {
-            console.log(`✅ Loaded ${data.books.length} books`);
+            console.log(`Loaded ${data.books.length} books`);
             displayBooks(data.books);
         } else {
-            console.error('❌ Error loading books:', data.error);
+            console.error('Error loading books:', data.error);
             showMessage('Ошибка загрузки книг', 'error');
         }
     } catch (error) {
         document.getElementById('loading').style.display = 'none';
-        console.error('❌ Connection error:', error);
+        console.error('Connection error:', error);
         showMessage('Ошибка соединения', 'error');
     }
 }
 
 // Отображение книг в сетке
 function displayBooks(books) {
-    console.log('🎨 Displaying books...');
+    console.log('Displaying books...');
     
     const container = document.getElementById('books-container');
     const noBooks = document.getElementById('no-books');
@@ -81,7 +81,7 @@ function displayBooks(books) {
     if (!books || books.length === 0) {
         container.innerHTML = '';
         noBooks.style.display = 'block';
-        console.log('❌ No books to display');
+        console.log('No books to display');
         return;
     }
 
@@ -91,16 +91,32 @@ function displayBooks(books) {
         const safeTitle = escapeHtml(book.title);
         const safeAuthor = escapeHtml(book.author_name || 'Автор не указан');
         const safeGenre = escapeHtml(book.genre_name || 'Жанр не указан');
-        const safeDescription = book.description ? escapeHtml(book.description.substring(0, 100)) + '...' : '';
+        const shortDesc = book.description ? (book.description.length > 50 ? book.description.substring(0, 50) + '...' : book.description) : '';
+        const safeShortDesc = escapeHtml(shortDesc);
+        const safeFullDesc = escapeHtml(book.description || '');
+        const defaultCover = 'https://i.pinimg.com/474x/e2/93/05/e29305e0ee7c3d1ef31ce6f234e194f8.jpg';
+        const coverSrc = book.cover_image ? book.cover_image : defaultCover;
+        const coverHtml = `
+            <div class="book-cover-wrap">
+                <img src="${coverSrc}" alt="Обложка ${safeTitle}" class="book-cover" onerror="this.onerror=null;this.src='${defaultCover}';"/>
+            </div>
+        `;
         
         return `
         <div class="book-card" data-book-id="${book.id}">
+            ${coverHtml}
             <div class="book-title">${safeTitle}</div>
             <div class="book-author">${safeAuthor}</div>
             <div class="book-genre">${safeGenre}</div>
             <div class="book-price">${book.price ? book.price + ' ₽' : 'Цена не указана'}</div>
             <div class="book-stock">В наличии: ${book.stock_quantity || 0} шт.</div>
-            ${book.description ? `<div class="book-description">${safeDescription}</div>` : ''}
+            ${book.description ? `
+                <div class="book-description">
+                    <span class="desc-short">${safeShortDesc}</span>
+                    <span class="desc-full" style="display:none;">${safeFullDesc}</span>
+                    <button class="btn btn-link toggle-description" data-book-id="${book.id}">Показать полностью</button>
+                </div>
+            ` : ''}
             <div class="book-actions">
                 ${book.stock_quantity > 0 ? `
                     <button class="btn btn-primary add-to-cart-btn" 
@@ -120,13 +136,28 @@ function displayBooks(books) {
     
     // Добавляем обработчики для кнопок "В корзину"
     addCartButtonListeners();
-    console.log('✅ Books displayed successfully');
+    
+    // Обработчики для раскрытия описания
+    const toggleButtons = document.querySelectorAll('.toggle-description');
+    toggleButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const card = this.closest('.book-card');
+            if (!card) return;
+            const shortEl = card.querySelector('.desc-short');
+            const fullEl = card.querySelector('.desc-full');
+            const isHidden = fullEl.style.display === 'none';
+            fullEl.style.display = isHidden ? 'inline' : 'none';
+            shortEl.style.display = isHidden ? 'none' : 'inline';
+            this.textContent = isHidden ? 'Свернуть' : 'Показать полностью';
+        });
+    });
+    console.log('Books displayed successfully');
 }
 
 // Добавление обработчиков для кнопок "В корзину"
 function addCartButtonListeners() {
     const addToCartButtons = document.querySelectorAll('.add-to-cart-btn');
-    console.log(`🛒 Found ${addToCartButtons.length} add-to-cart buttons`);
+    console.log(`Found ${addToCartButtons.length} add-to-cart buttons`);
     
     addToCartButtons.forEach(button => {
         button.addEventListener('click', function() {
@@ -135,7 +166,7 @@ function addCartButtonListeners() {
             const bookPrice = parseFloat(this.getAttribute('data-book-price'));
             const bookAuthor = this.getAttribute('data-book-author');
             
-            console.log('➕ Add to cart clicked:', { bookId, bookTitle, bookPrice, bookAuthor });
+            console.log('Add to cart clicked:', { bookId, bookTitle, bookPrice, bookAuthor });
             
             addToCart(bookId, bookTitle, bookPrice, bookAuthor);
         });
@@ -144,7 +175,7 @@ function addCartButtonListeners() {
 
 // Загрузка фильтров (жанры и авторы)
 async function loadFilters() {
-    console.log('🔧 Loading filters...');
+    console.log('Loading filters...');
     
     try {
         // Загружаем жанры
@@ -157,7 +188,7 @@ async function loadFilters() {
                 genresData.genres.map(genre => 
                     `<option value="${genre.id}">${escapeHtml(genre.name)}</option>`
                 ).join('');
-            console.log('✅ Genres loaded:', genresData.genres.length);
+            console.log('Genres loaded:', genresData.genres.length);
         }
 
         // Загружаем авторы
@@ -170,10 +201,10 @@ async function loadFilters() {
                 authorsData.authors.map(author => 
                     `<option value="${author.id}">${escapeHtml(author.name)}</option>`
                 ).join('');
-            console.log('✅ Authors loaded:', authorsData.authors.length);
+            console.log('Authors loaded:', authorsData.authors.length);
         }
     } catch (error) {
-        console.error('❌ Error loading filters:', error);
+        console.error('Error loading filters:', error);
     }
 }
 

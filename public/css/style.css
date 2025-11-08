@@ -1,4 +1,4 @@
-﻿/* ОСНОВНЫЕ СТИЛИ */
+/* ОСНОВНЫЕ СТИЛИ */
 * {
     margin: 0;
     padding: 0;
@@ -195,6 +195,21 @@ body {
 
 .book-actions {
     margin-top: 1rem;
+}
+
+/* Uniform book cover sizes across the site */
+.book-cover-wrap {
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.book-cover {
+    width: 160px;
+    height: 240px;
+    object-fit: cover;
+    border-radius: 6px;
+    background-color: #eee;
+    display: inline-block;
 }
 
 /* Filters */
