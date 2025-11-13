@@ -6,6 +6,10 @@ document.addEventListener('DOMContentLoaded', function() {
     loadFilters();
 });
 
+// Состояние каталога: сортировка и фильтры
+let catalogSort = { field: 'none', direction: 'asc' };
+const catalogFilters = { authors: new Set(), genres: new Set() };
+
 // Инициализация обработчиков событий для каталога
 function initializeCatalogEventListeners() {
     console.log('🔧 Initializing catalog event listeners');
@@ -34,6 +38,66 @@ function initializeCatalogEventListeners() {
         });
         console.log('Live search listener added');
     }
+
+    // Селект сортировки
+    const sortSelect = document.getElementById('sort-select');
+    if (sortSelect) {
+        sortSelect.addEventListener('change', function() {
+            const val = this.value;
+            switch (val) {
+                case 'title_asc': catalogSort = { field: 'title', direction: 'asc' }; break;
+                case 'title_desc': catalogSort = { field: 'title', direction: 'desc' }; break;
+                case 'price_asc': catalogSort = { field: 'price', direction: 'asc' }; break;
+                case 'price_desc': catalogSort = { field: 'price', direction: 'desc' }; break;
+                default: catalogSort = { field: 'none', direction: 'asc' }; break;
+            }
+            loadBooks();
+        });
+    }
+
+    // Выпадающие меню авторов/жанров
+    ['authors','genres'].forEach(type => {
+        const dropdown = document.getElementById(`${type}-dropdown`);
+        if (!dropdown) return;
+        const toggleBtn = dropdown.querySelector('.dropdown-toggle');
+        const menu = dropdown.querySelector('.filter-menu');
+        const searchInput = dropdown.querySelector('.filter-search-input');
+        const list = dropdown.querySelector('.filter-list');
+
+        if (toggleBtn && menu) {
+            toggleBtn.addEventListener('click', () => {
+                menu.style.display = (menu.style.display === 'none' || !menu.style.display) ? 'block' : 'none';
+            });
+            document.addEventListener('click', (e) => {
+                if (!dropdown.contains(e.target)) menu.style.display = 'none';
+            });
+        }
+
+        // Применение фильтра при изменении чекбокса
+        if (list) {
+            list.addEventListener('change', (e) => {
+                if (e.target.type === 'checkbox') {
+                    const selected = Array.from(list.querySelectorAll('input[type="checkbox"]:checked')).map(i => i.value);
+                    if (type === 'authors') {
+                        catalogFilters.authors = new Set(selected);
+                    } else {
+                        catalogFilters.genres = new Set(selected);
+                    }
+                    loadBooks();
+                }
+            });
+        }
+
+        if (searchInput) {
+            searchInput.addEventListener('input', () => {
+                const q = searchInput.value.toLowerCase();
+                list.querySelectorAll('.filter-item').forEach(item => {
+                    const txt = item.textContent.toLowerCase();
+                    item.style.display = txt.includes(q) ? '' : 'none';
+                });
+            });
+        }
+    });
 }
 
 // Загрузка книг с фильтрами
@@ -41,8 +105,7 @@ async function loadBooks() {
     console.log('Loading books...');
     
     const search = document.getElementById('search-input').value.trim();
-    const genreId = document.getElementById('genre-filter').value;
-    const authorId = document.getElementById('author-filter').value;
+    // Автор/жанр фильтруем на клиенте (мультивыбор)
 
     // Показываем индикатор загрузки
     document.getElementById('loading').style.display = 'block';
@@ -53,8 +116,7 @@ async function loadBooks() {
     const params = new URLSearchParams();
     
     if (search) params.append('search', search);
-    if (genreId) params.append('genre_id', genreId);
-    if (authorId) params.append('author_id', authorId);
+    // На сервер отправляем только текстовый поиск; сортировка/автор/жанр применяются на клиенте
     
     url += params.toString();
 
@@ -66,7 +128,9 @@ async function loadBooks() {
 
         if (response.ok) {
             console.log(`Loaded ${data.books.length} books`);
-            displayBooks(data.books);
+            const filtered = applyCatalogFilters(data.books);
+            const sorted = sortCatalogData(filtered);
+            displayBooks(sorted);
         } else {
             console.error('Error loading books:', data.error);
             showMessage('Ошибка загрузки книг', 'error');
@@ -76,6 +140,33 @@ async function loadBooks() {
         console.error('Connection error:', error);
         showMessage('Ошибка соединения', 'error');
     }
+}
+
+// Применение клиентской фильтрации
+function applyCatalogFilters(books) {
+    const a = catalogFilters.authors;
+    const g = catalogFilters.genres;
+    return books.filter(b =>
+        (a.size === 0 || a.has(b.author_name || '')) &&
+        (g.size === 0 || g.has(b.genre_name || ''))
+    );
+}
+
+// Сортировка данных по названию/цене
+function sortCatalogData(books) {
+    const { field, direction } = catalogSort;
+    if (field === 'none') return books;
+    const dir = direction === 'desc' ? -1 : 1;
+    return [...books].sort((x,y) => {
+        let vx = 0, vy = 0;
+        if (field === 'title') {
+            return dir * String(x.title||'').localeCompare(String(y.title||''),'ru',{sensitivity:'base'});
+        }
+        if (field === 'price') {
+            vx = Number(x.price||0); vy = Number(y.price||0);
+        }
+        return dir * (vx - vy);
+    });
 }
 
 // Отображение книг в сетке
@@ -189,13 +280,19 @@ async function loadFilters() {
         const genresResponse = await fetch('/api/genres');
         const genresData = await genresResponse.json();
         
-        if (genresResponse.ok && genresData.genres && Array.isArray(genresData.genres)) {
-            const genreSelect = document.getElementById('genre-filter');
-            genreSelect.innerHTML = '<option value="">Все жанры</option>' +
-                genresData.genres.map(genre => 
-                    `<option value="${genre.id}">${escapeHtml(genre.name)}</option>`
-                ).join('');
-            console.log('Genres loaded:', genresData.genres.length);
+        if (genresResponse.ok) {
+            const genresArray = Array.isArray(genresData) ? genresData : (Array.isArray(genresData.genres) ? genresData.genres : []);
+            const genresList = document.getElementById('genres-list');
+            if (genresList) {
+                if (genresArray.length) {
+                    genresList.innerHTML = genresArray
+                        .map(g => `<label class="filter-item"><input type="checkbox" value="${escapeHtml(g.name)}" ${catalogFilters.genres.has(g.name)?'checked':''}/> ${escapeHtml(g.name)}</label>`)
+                        .join('');
+                } else {
+                    genresList.innerHTML = '<span class="filters-empty">Жанры отсутствуют</span>';
+                }
+            }
+            console.log('Genres loaded:', genresArray.length);
         } else {
             console.warn('No genres data available or invalid format');
         }
@@ -204,13 +301,19 @@ async function loadFilters() {
         const authorsResponse = await fetch('/api/authors');
         const authorsData = await authorsResponse.json();
         
-        if (authorsResponse.ok && authorsData.authors && Array.isArray(authorsData.authors)) {
-            const authorSelect = document.getElementById('author-filter');
-            authorSelect.innerHTML = '<option value="">Все авторы</option>' +
-                authorsData.authors.map(author => 
-                    `<option value="${author.id}">${escapeHtml(author.name)}</option>`
-                ).join('');
-            console.log('Authors loaded:', authorsData.authors.length);
+        if (authorsResponse.ok) {
+            const authorsArray = Array.isArray(authorsData) ? authorsData : (Array.isArray(authorsData.authors) ? authorsData.authors : []);
+            const authorsList = document.getElementById('authors-list');
+            if (authorsList) {
+                if (authorsArray.length) {
+                    authorsList.innerHTML = authorsArray
+                        .map(a => `<label class="filter-item"><input type="checkbox" value="${escapeHtml(a.name)}" ${catalogFilters.authors.has(a.name)?'checked':''}/> ${escapeHtml(a.name)}</label>`)
+                        .join('');
+                } else {
+                    authorsList.innerHTML = '<span class="filters-empty">Авторы отсутствуют</span>';
+                }
+            }
+            console.log('Authors loaded:', authorsArray.length);
         } else {
             console.warn('No authors data available or invalid format');
         }

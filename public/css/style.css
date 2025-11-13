@@ -250,7 +250,7 @@ body {
     align-items: center;
 }
 
-.filters input,
+.filters input:not([type="checkbox"]),
 .filters select {
     padding: 0.5rem;
     border: 1px solid #ddd;
@@ -258,10 +258,76 @@ body {
     font-size: 0.9rem;
 }
 
-.filters input {
+/* Не применять общие стили к чекбоксам внутри выпадающих фильтров каталога */
+.filters input[type="checkbox"] {
+    padding: 0 !important;
+    border: none;
+    border-radius: 0;
+    width: 16px;
+    height: 16px;
+    margin: 0 !important;
+    flex: none !important;
+    min-width: auto !important;
+}
+
+.filters input:not([type="checkbox"]) {
     flex: 1;
     min-width: 200px;
 }
+
+/* Catalog dropdown filters */
+.filter-dropdown { position: relative; }
+.filter-dropdown .dropdown-toggle {
+    white-space: nowrap;
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    background: #fff;
+    color: #2c3e50;
+}
+.filter-dropdown .dropdown-toggle:hover { background: #f7f7f7; }
+.filter-dropdown .filter-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background: #fff;
+    border: 1px solid #ccc;
+    padding: 6px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    width: max-content;
+    min-width: 100px;
+    max-width: min(270px, 80vw);
+    overflow-x: auto;
+}
+.filter-dropdown .filter-search { padding: 6px 8px; border-bottom: 1px solid #eee; margin-bottom: 6px; }
+.filter-dropdown .filter-search-input { width: 100%; font-size: 12px; padding: 6px 8px; border: 1px solid #d0d7de; border-radius: 4px; }
+.filter-dropdown .filter-list { max-height: 100px; overflow-y: auto; margin-bottom: 6px; padding: 0; }
+.filter-dropdown .filter-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-weight: normal;
+    font-size: 12px;
+    line-height: 1.4;
+    padding: 2px 0;
+    white-space: normal;
+}
+.filter-dropdown .filter-item input[type="checkbox"] { margin: 0; width: 16px; height: 16px; flex-shrink: 0; }
+.filter-dropdown .filters-empty { display: block; font-weight: normal; color: #888; padding: 4px 0; font-size: 12px; }
+.filter-dropdown .filter-actions { display: flex; gap: 6px; }
+.filter-dropdown .filter-actions .filter-apply {
+    background: #3498db;
+    color: #fff;
+    border-radius: 3px;
+    display: block;
+    width: 100%;
+    padding: 6px 8px;
+    border: none;
+    cursor: pointer;
+}
+.filter-dropdown .filter-actions .filter-apply:hover { background: #2980b9; }
 
 /* Modals */
 .modal {

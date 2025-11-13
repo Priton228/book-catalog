@@ -21,6 +21,10 @@ const authenticate = async (req, res, next) => {
     next();
   } catch (error) {
     console.error('Auth error:', error);
+    // Специальная обработка истечения токена
+    if (error.name === 'TokenExpiredError') {
+      return res.status(401).json({ error: 'Токен истёк', expired: true });
+    }
     res.status(401).json({ error: 'Неверный токен' });
   }
 };

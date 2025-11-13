@@ -36,12 +36,30 @@
             
             <div class="filters">
                 <input type="text" id="search-input" placeholder="Поиск по названию или автору...">
-                <select id="genre-filter">
-                    <option value="">Все жанры</option>
+                <select id="sort-select" aria-label="Сортировка">
+                    <option value="none">Без сортировки</option>
+                    <option value="title_asc">Название A→Я</option>
+                    <option value="title_desc">Название Я→А</option>
+                    <option value="price_asc">Цена ↑</option>
+                    <option value="price_desc">Цена ↓</option>
                 </select>
-                <select id="author-filter">
-                    <option value="">Все авторы</option>
-                </select>
+
+                <div class="filter-dropdown" id="authors-dropdown">
+                    <button class="btn btn-outline dropdown-toggle" type="button">Авторы ▾</button>
+                    <div class="filter-menu" style="display:none;">
+                        <div class="filter-search"><input type="text" class="filter-search-input" placeholder="Поиск автора..." /></div>
+                        <div class="filter-list" id="authors-list"></div>
+                    </div>
+                </div>
+
+                <div class="filter-dropdown" id="genres-dropdown">
+                    <button class="btn btn-outline dropdown-toggle" type="button">Жанры ▾</button>
+                    <div class="filter-menu" style="display:none;">
+                        <div class="filter-search"><input type="text" class="filter-search-input" placeholder="Поиск жанра..." /></div>
+                        <div class="filter-list" id="genres-list"></div>
+                    </div>
+                </div>
+
                 <button id="apply-filters" class="btn btn-primary">Применить фильтры</button>
             </div>
 
@@ -65,6 +83,7 @@
                 <input type="email" id="login-email" placeholder="Email" required>
                 <input type="password" id="login-password" placeholder="Пароль" required>
                 <button type="submit" class="btn btn-primary">Войти</button>
+                <a href="#" id="forgot-password-link" style="display: block; text-align: center; margin-top: 10px; color: #3498db; text-decoration: none;">Забыли пароль?</a>
             </form>
         </div>
     </div>
@@ -77,7 +96,32 @@
                 <input type="text" id="register-name" placeholder="ФИО" required>
                 <input type="email" id="register-email" placeholder="Email" required>
                 <input type="password" id="register-password" placeholder="Пароль" required>
+                <input type="password" id="register-password-confirm" placeholder="Повторите пароль" required>
                 <button type="submit" class="btn btn-primary">Зарегистрироваться</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="forgot-password-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3>Восстановление пароля</h3>
+            <form id="forgot-password-form">
+                <input type="email" id="forgot-email" placeholder="Email" required>
+                <input type="text" id="forgot-name" placeholder="ФИО" required>
+                <button type="submit" class="btn btn-primary">Продолжить</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="reset-password-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3>Новый пароль</h3>
+            <form id="reset-password-form">
+                <input type="password" id="reset-password" placeholder="Новый пароль" required>
+                <input type="password" id="reset-password-confirm" placeholder="Повторите новый пароль" required>
+                <button type="submit" class="btn btn-primary">Сохранить пароль</button>
             </form>
         </div>
     </div>

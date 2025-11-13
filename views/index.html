@@ -54,6 +54,7 @@
                 <input type="email" id="login-email" placeholder="Email" required>
                 <input type="password" id="login-password" placeholder="Пароль" required>
                 <button type="submit" class="btn btn-primary">Войти</button>
+                <a href="#" id="forgot-password-link" style="display: block; text-align: center; margin-top: 10px; color: #3498db; text-decoration: none;">Забыли пароль?</a>
             </form>
         </div>
     </div>
@@ -66,7 +67,32 @@
                 <input type="text" id="register-name" placeholder="ФИО" required>
                 <input type="email" id="register-email" placeholder="Email" required>
                 <input type="password" id="register-password" placeholder="Пароль" required>
+                <input type="password" id="register-password-confirm" placeholder="Повторите пароль" required>
                 <button type="submit" class="btn btn-primary">Зарегистрироваться</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="forgot-password-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3>Восстановление пароля</h3>
+            <form id="forgot-password-form">
+                <input type="email" id="forgot-email" placeholder="Email" required>
+                <input type="text" id="forgot-name" placeholder="ФИО" required>
+                <button type="submit" class="btn btn-primary">Продолжить</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="reset-password-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3>Новый пароль</h3>
+            <form id="reset-password-form">
+                <input type="password" id="reset-password" placeholder="Новый пароль" required>
+                <input type="password" id="reset-password-confirm" placeholder="Повторите новый пароль" required>
+                <button type="submit" class="btn btn-primary">Сохранить пароль</button>
             </form>
         </div>
     </div>

@@ -51,6 +51,10 @@ app.get('/admin.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'admin.html'));
 });
 
+app.get('/test-api.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'test-api.html'));
+});
+
 // Health check
 app.get('/health', (req, res) => {
     res.json({ 

@@ -1,4 +1,4 @@
-﻿const pool = require('../config/database');
+﻿﻿const pool = require('../config/database');
 const bcrypt = require('bcryptjs');
 
 class User {
@@ -32,6 +32,12 @@ class User {
 
   static async comparePassword(plainPassword, hashedPassword) {
     return await bcrypt.compare(plainPassword, hashedPassword);
+  }
+
+  static async updatePassword(userId, newPassword) {
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    const query = 'UPDATE users SET password_hash = $1 WHERE id = $2';
+    await pool.query(query, [hashedPassword, userId]);
   }
 }
 

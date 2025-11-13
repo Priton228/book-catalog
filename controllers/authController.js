@@ -1,4 +1,4 @@
-﻿const jwt = require('jsonwebtoken');
+﻿﻿const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
 const register = async (req, res) => {
@@ -109,4 +109,67 @@ const getProfile = async (req, res) => {
   }
 };
 
-module.exports = { register, login, getProfile };
+// Проверка email и ФИО для восстановления пароля
+const verifyReset = async (req, res) => {
+  try {
+    const { email, full_name } = req.body;
+
+    console.log('🔍 Проверка данных для восстановления:', email);
+
+    if (!email || !full_name) {
+      return res.status(400).json({ error: 'Email и ФИО обязательны' });
+    }
+
+    // Находим пользователя
+    const user = await User.findByEmail(email);
+    if (!user) {
+      console.log('❌ Пользователь не найден:', email);
+      return res.status(404).json({ error: 'Пользователь с таким email не найден' });
+    }
+
+    // Проверяем ФИО
+    if (user.full_name.trim().toLowerCase() !== full_name.trim().toLowerCase()) {
+      console.log('❌ ФИО не совпадает для:', email);
+      return res.status(400).json({ error: 'ФИО не совпадает с указанным при регистрации' });
+    }
+
+    console.log('✅ Данные подтверждены для:', email);
+
+    res.json({ message: 'Данные подтверждены' });
+  } catch (error) {
+    console.error('❌ Verify reset error:', error);
+    res.status(500).json({ error: 'Ошибка при проверке данных' });
+  }
+};
+
+// Сброс пароля
+const resetPassword = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    console.log('🔑 Сброс пароля для:', email);
+
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email и пароль обязательны' });
+    }
+
+    // Находим пользователя
+    const user = await User.findByEmail(email);
+    if (!user) {
+      console.log('❌ Пользователь не найден:', email);
+      return res.status(404).json({ error: 'Пользователь не найден' });
+    }
+
+    // Обновляем пароль
+    await User.updatePassword(user.id, password);
+
+    console.log('✅ Пароль успешно обновлён для:', email);
+
+    res.json({ message: 'Пароль успешно изменён' });
+  } catch (error) {
+    console.error('❌ Reset password error:', error);
+    res.status(500).json({ error: 'Ошибка при сбросе пароля' });
+  }
+};
+
+module.exports = { register, login, getProfile, verifyReset, resetPassword };

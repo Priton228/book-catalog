@@ -1,4 +1,4 @@
-﻿// Страница оформления заказа
+﻿﻿// Страница оформления заказа
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Checkout page loaded');
     initializeCheckoutEventListeners();
@@ -130,6 +130,10 @@ async function handleCheckoutSubmit(e) {
             }, 1000);
             
         } else {
+            // Обработка истёкшего токена
+            if (typeof handleAuthError === 'function' && handleAuthError(response, data)) {
+                return;
+            }
             console.error('Order creation failed:', data.error);
             showMessage(data.error, 'error');
         }

@@ -1,4 +1,4 @@
-﻿// Загрузка заказов при открытии страницы
+﻿﻿// Загрузка заказов при открытии страницы
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Orders page loaded');
     initializeOrdersEventListeners();
@@ -42,6 +42,10 @@ async function loadOrders() {
         if (response.ok) {
             displayOrders(data.orders);
         } else {
+            // Обработка истёкшего токена
+            if (typeof handleAuthError === 'function' && handleAuthError(response, data)) {
+                return;
+            }
             console.error('Error loading orders:', data.error);
             showMessage('Ошибка загрузки заказов: ' + data.error, 'error');
         }

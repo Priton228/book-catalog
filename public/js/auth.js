@@ -16,6 +16,12 @@ function initializeEventListeners() {
     document.getElementById('logout-btn')?.addEventListener('click', showLogoutConfirm);
     document.getElementById('cart-btn')?.addEventListener('click', showCart);
     
+    // Ссылка восстановления пароля
+    document.getElementById('forgot-password-link')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        showForgotPassword();
+    });
+    
     // Закрытие модальных окон
     document.querySelectorAll('.close').forEach(closeBtn => {
         closeBtn.addEventListener('click', closeModals);
@@ -24,6 +30,8 @@ function initializeEventListeners() {
     // Формы
     document.getElementById('login-form')?.addEventListener('submit', handleLogin);
     document.getElementById('register-form')?.addEventListener('submit', handleRegister);
+    document.getElementById('forgot-password-form')?.addEventListener('submit', handleForgotPassword);
+    document.getElementById('reset-password-form')?.addEventListener('submit', handleResetPassword);
     
     // Закрытие по клику вне модального окна
     window.addEventListener('click', function(event) {
@@ -101,6 +109,13 @@ function showCart() {
     updateCartDisplay();
 }
 
+// Показать модальное окно восстановления пароля
+function showForgotPassword() {
+    console.log('showForgotPassword called');
+    closeModals();
+    document.getElementById('forgot-password-modal').style.display = 'block';
+}
+
 // Закрыть все модальные окна
 function closeModals() {
     document.querySelectorAll('.modal').forEach(modal => {
@@ -157,6 +172,13 @@ async function handleRegister(e) {
     const full_name = document.getElementById('register-name').value;
     const email = document.getElementById('register-email').value;
     const password = document.getElementById('register-password').value;
+    const passwordConfirm = document.getElementById('register-password-confirm').value;
+
+    // Проверка совпадения паролей
+    if (password !== passwordConfirm) {
+        showMessage('Пароли не совпадают', 'error');
+        return;
+    }
 
     try {
         const response = await fetch('/api/auth/register', {
@@ -195,6 +217,86 @@ function logout() {
     updateAuthUI();
     showMessage('Вы вышли из системы', 'info');
     window.location.href = '/';
+}
+
+// Обработка формы восстановления пароля (шаг 1: проверка email и ФИО)
+let tempResetEmail = null;
+async function handleForgotPassword(e) {
+    e.preventDefault();
+    console.log('handleForgotPassword called');
+    
+    const email = document.getElementById('forgot-email').value;
+    const full_name = document.getElementById('forgot-name').value;
+
+    try {
+        const response = await fetch('/api/auth/verify-reset', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ email, full_name })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            tempResetEmail = email;
+            showMessage('Данные подтверждены. Введите новый пароль.', 'success');
+            closeModals();
+            document.getElementById('reset-password-modal').style.display = 'block';
+            document.getElementById('forgot-password-form').reset();
+        } else {
+            showMessage(data.error, 'error');
+        }
+    } catch (error) {
+        console.error('Forgot password error:', error);
+        showMessage('Ошибка соединения', 'error');
+    }
+}
+
+// Обработка формы установки нового пароля (шаг 2)
+async function handleResetPassword(e) {
+    e.preventDefault();
+    console.log('handleResetPassword called');
+    
+    const password = document.getElementById('reset-password').value;
+    const passwordConfirm = document.getElementById('reset-password-confirm').value;
+
+    // Проверка совпадения паролей
+    if (password !== passwordConfirm) {
+        showMessage('Пароли не совпадают', 'error');
+        return;
+    }
+
+    if (!tempResetEmail) {
+        showMessage('Ошибка: email не найден', 'error');
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/auth/reset-password', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ email: tempResetEmail, password })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            tempResetEmail = null;
+            showMessage('Пароль успешно изменён! Войдите с новым паролем.', 'success');
+            closeModals();
+            showLogin();
+            document.getElementById('reset-password-form').reset();
+        } else {
+            showMessage(data.error, 'error');
+        }
+    } catch (error) {
+        console.error('Reset password error:', error);
+        showMessage('Ошибка соединения', 'error');
+    }
 }
 
 // Показать сообщение
@@ -238,6 +340,28 @@ function getAuthHeaders() {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${authToken}`
     };
+}
+
+// Обработка ошибки авторизации (401) - автоматический logout
+function handleAuthError(response, data) {
+    if (response.status === 401) {
+        if (data && data.expired) {
+            showMessage('Сессия истекла. Пожалуйста, войдите заново.', 'warning');
+        } else {
+            showMessage('Необходима авторизация', 'warning');
+        }
+        // Очищаем токен и перезагружаем страницу
+        authToken = null;
+        currentUser = null;
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('currentUser');
+        localStorage.removeItem('cart');
+        setTimeout(() => {
+            window.location.href = '/';
+        }, 1500);
+        return true;
+    }
+    return false;
 }
 
 // Экранирование HTML
