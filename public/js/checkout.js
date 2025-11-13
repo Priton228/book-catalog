@@ -1,4 +1,4 @@
-﻿﻿// Страница оформления заказа
+﻿﻿﻿﻿// Страница оформления заказа
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Checkout page loaded');
     initializeCheckoutEventListeners();
@@ -39,6 +39,7 @@ function loadCheckoutData() {
     
     checkoutItems.innerHTML = cart.map(item => `
         <div class="checkout-item">
+            <img class="checkout-item-cover" src="${item.cover || 'https://i.pinimg.com/474x/e2/93/05/e29305e0ee7c3d1ef31ce6f234e194f8.jpg'}" alt="Обложка" onerror="this.onerror=null;this.src='https://i.pinimg.com/474x/e2/93/05/e29305e0ee7c3d1ef31ce6f234e194f8.jpg';"/>
             <div class="checkout-item-info">
                 <div class="checkout-item-title">${escapeHtml(item.title)}</div>
                 <div class="checkout-item-author">${escapeHtml(item.author)}</div>
@@ -63,6 +64,7 @@ function prefillUserData() {
     if (currentUser) {
         document.getElementById('full-name').value = currentUser.full_name || '';
         document.getElementById('email').value = currentUser.email || '';
+        // Note: Phone number is not typically stored in user data, so we leave it empty
     }
     
     console.log('User data prefilled');
