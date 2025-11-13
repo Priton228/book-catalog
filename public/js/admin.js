@@ -803,9 +803,7 @@ function displayBooks(books) {
         const safeTitle = (book.title || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
         const safeAuthor = (book.author_name || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
         const safeGenre = (book.genre_name || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-    const shortDesc = book.description ? (book.description.length > 80 ? book.description.substring(0, 80) + '...' : book.description) : '';
-        const safeShortDesc = shortDesc.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-        const safeFullDesc = (book.description || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        const safeDesc = (book.description || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
         const defaultCover = 'https://i.pinimg.com/474x/e2/93/05/e29305e0ee7c3d1ef31ce6f234e194f8.jpg';
         const coverSrc = book.cover_image ? book.cover_image : defaultCover;
         const coverCell = `
@@ -827,7 +825,7 @@ function displayBooks(books) {
             <td>
                 ${book.description ? `
                     <div class="desc-wrap">
-                        <span class="desc-short">${safeShortDesc}</span>
+                        <span class="desc-full">${safeDesc}</span>
                     </div>
                 ` : ''}
             </td>
