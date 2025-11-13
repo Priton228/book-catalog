@@ -1,4 +1,4 @@
-﻿const pool = require('../config/database');
+const pool = require('../config/database');
 
 class Order {
   static async create(orderData) {
@@ -70,23 +70,27 @@ class Order {
     const query = `
       SELECT 
         o.*,
+        u.email as user_email,
+        u.full_name as user_name,
         json_agg(
           json_build_object(
             'id', oi.id,
             'book_id', oi.book_id,
             'title', b.title,
             'author_name', a.name,
+            'cover_image', b.cover_image,
             'quantity', oi.quantity,
             'unit_price', oi.unit_price,
             'total_price', oi.quantity * oi.unit_price
           )
         ) as items
       FROM orders o
+      LEFT JOIN users u ON o.user_id = u.id
       LEFT JOIN order_items oi ON o.id = oi.order_id
       LEFT JOIN books b ON oi.book_id = b.id
       LEFT JOIN authors a ON b.author_id = a.id
       WHERE o.user_id = $1
-      GROUP BY o.id
+      GROUP BY o.id, u.email, u.full_name
       ORDER BY o.created_at DESC
     `;
     const result = await pool.query(query, [userId]);
@@ -105,6 +109,7 @@ class Order {
             'book_id', oi.book_id,
             'title', b.title,
             'author_name', a.name,
+            'cover_image', b.cover_image,
             'quantity', oi.quantity,
             'unit_price', oi.unit_price,
             'total_price', oi.quantity * oi.unit_price

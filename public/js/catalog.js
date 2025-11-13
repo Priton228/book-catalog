@@ -221,7 +221,8 @@ function displayBooks(books) {
                             data-book-id="${book.id}"
                             data-book-title="${safeTitle}"
                             data-book-price="${book.price}"
-                            data-book-author="${safeAuthor}">
+                            data-book-author="${safeAuthor}"
+                            data-book-cover="${coverSrc}">
                         В корзину
                     </button>
                 ` : `
@@ -263,10 +264,11 @@ function addCartButtonListeners() {
             const bookTitle = this.getAttribute('data-book-title');
             const bookPrice = parseFloat(this.getAttribute('data-book-price'));
             const bookAuthor = this.getAttribute('data-book-author');
+            const bookCover = this.getAttribute('data-book-cover');
             
-            console.log('Add to cart clicked:', { bookId, bookTitle, bookPrice, bookAuthor });
+            console.log('Add to cart clicked:', { bookId, bookTitle, bookPrice, bookAuthor, bookCover });
             
-            addToCart(bookId, bookTitle, bookPrice, bookAuthor);
+            addToCart(bookId, bookTitle, bookPrice, bookAuthor, bookCover);
         });
     });
 }

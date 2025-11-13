@@ -1,4 +1,4 @@
-﻿// Основные функции для главной страницы
+// Основные функции для главной страницы
 console.log('BookCatalog initialized');
 
 // Добавляем стили для сообщений
@@ -26,6 +26,13 @@ style.textContent = `
         align-items: center;
         padding: 1rem;
         border-bottom: 1px solid #eee;
+    }
+    .cart-item-cover {
+        width: 40px;
+        height: 60px;
+        object-fit: cover;
+        border-radius: 4px;
+        margin-right: 0.75rem;
     }
     
     .cart-item-info {

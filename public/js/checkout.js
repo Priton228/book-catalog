@@ -104,7 +104,7 @@ async function handleCheckoutSubmit(e) {
                 quantity: parseInt(item.quantity)
             })),
             shipping_address: `${formData.shipping_address}. Способ доставки: ${getShippingMethodText(formData.shipping_method)}`,
-            customer_notes: `Контактные данные: ${formData.full_name}, тел.: ${formData.phone}, email: ${formData.email}. Способ оплаты: ${getPaymentMethodText(formData.payment_method)}. ${formData.customer_notes || ''}`
+            customer_notes: `${formData.customer_notes || ''}`
         };
 
         console.log('Sending order:', orderData);
@@ -121,6 +121,19 @@ async function handleCheckoutSubmit(e) {
             showMessage('Заказ успешно создан!', 'success');
             console.log('Order created:', data.order);
             
+            // Сохраняем метаданные заказа (контакты и способ оплаты) для отображения в "Моих заказах"
+            const meta = {
+                full_name: formData.full_name,
+                phone: formData.phone,
+                email: formData.email,
+                payment_method: getPaymentMethodText(formData.payment_method)
+            };
+            try {
+                localStorage.setItem('order_meta_' + data.order.id, JSON.stringify(meta));
+            } catch (e) {
+                console.warn('Failed to store order meta:', e);
+            }
+
             // Очищаем корзину
             localStorage.removeItem('cart');
             
@@ -158,6 +171,7 @@ function showOrderConfirmation(order, formData) {
                 <p><strong>Адрес доставки:</strong> ${formData.shipping_address}</p>
                 <p><strong>Способ доставки:</strong> ${getShippingMethodText(formData.shipping_method)}</p>
                 <p><strong>Способ оплаты:</strong> ${getPaymentMethodText(formData.payment_method)}</p>
+                ${formData.customer_notes ? `<p><strong>Комментарий:</strong> ${escapeHtml(formData.customer_notes)}</p>` : ''}
             </div>
             <div class="confirmation-actions">
                 <button onclick="window.location.href='/orders.html'" class="btn btn-primary">Мои заказы</button>

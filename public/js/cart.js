@@ -1,4 +1,4 @@
-﻿// Корзина покупок - ГЛОБАЛЬНЫЕ ФУНКЦИИ
+// Корзина покупок - ГЛОБАЛЬНЫЕ ФУНКЦИИ
 window.cart = JSON.parse(localStorage.getItem('cart')) || [];
 
 console.log('Cart.js loaded');
@@ -20,8 +20,8 @@ function initializeCartEventListeners() {
 }
 
 // ГЛОБАЛЬНАЯ функция добавления в корзину
-window.addToCart = function(bookId, bookTitle, bookPrice, bookAuthor) {
-    console.log('➕ Adding to cart:', { bookId, bookTitle, bookPrice, bookAuthor });
+window.addToCart = function(bookId, bookTitle, bookPrice, bookAuthor, bookCover) {
+    console.log('➕ Adding to cart:', { bookId, bookTitle, bookPrice, bookAuthor, bookCover });
     
     if (!window.isAuthenticated()) {
         window.showMessage('Для добавления в корзину необходимо войти в систему', 'warning');
@@ -40,6 +40,7 @@ window.addToCart = function(bookId, bookTitle, bookPrice, bookAuthor) {
             title: bookTitle,
             author: bookAuthor,
             price: bookPrice,
+            cover: bookCover,
             quantity: 1
         });
         console.log('Added new item to cart:', bookTitle);
@@ -84,8 +85,10 @@ window.updateCartDisplay = function() {
         if (cartTotal) cartTotal.textContent = '0 ₽';
         console.log('🛒 Cart is empty');
     } else {
+        const defaultCover = 'https://i.pinimg.com/474x/e2/93/05/e29305e0ee7c3d1ef31ce6f234e194f8.jpg';
         cartItems.innerHTML = window.cart.map(item => `
             <div class="cart-item" data-cart-item-id="${item.bookId}">
+                <img class="cart-item-cover" src="${item.cover || defaultCover}" alt="Обложка" onerror="this.onerror=null;this.src='${defaultCover}';"/>
                 <div class="cart-item-info">
                     <div class="cart-item-title">${window.escapeHtml(item.title)}</div>
                     <div class="cart-item-author">${window.escapeHtml(item.author)}</div>

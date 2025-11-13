@@ -74,6 +74,15 @@ function displayOrders(orders) {
 
     container.innerHTML = orders.map(order => {
         console.log('Processing order:', order);
+        const metaRaw = localStorage.getItem('order_meta_' + order.id);
+        const meta = metaRaw ? JSON.parse(metaRaw) : null;
+        const contactLine = (order.user_name || order.user_email || (meta && (meta.full_name || meta.phone || meta.email)))
+            ? `<div class="order-address"><strong>Контактные данные:</strong> ${escapeHtml(order.user_name || (meta && meta.full_name) || '')}${meta && meta.phone ? ' · тел.: ' + escapeHtml(meta.phone) : ''}${order.user_email ? ' · ' + escapeHtml(order.user_email) : (meta && meta.email ? ' · ' + escapeHtml(meta.email) : '')}</div>`
+            : '';
+        const paymentLine = meta && meta.payment_method
+            ? `<div class="order-address"><strong>Способ оплаты:</strong> ${escapeHtml(meta.payment_method)}</div>`
+            : '';
+        const defaultCover = 'https://i.pinimg.com/474x/e2/93/05/e29305e0ee7c3d1ef31ce6f234e194f8.jpg';
         return `
         <div class="order-card">
             <div class="order-header">
@@ -91,6 +100,7 @@ function displayOrders(orders) {
                 ${order.items && order.items.length > 0 ? 
                     order.items.map(item => `
                         <div class="order-item">
+                            <img class="order-item-cover" src="${item.cover_image || defaultCover}" alt="Обложка" onerror="this.onerror=null;this.src='${defaultCover}';"/>
                             <div class="order-item-info">
                                 <div class="order-item-title">${escapeHtml(item.title || 'Неизвестная книга')}</div>
                                 <div class="order-item-author">${escapeHtml(item.author_name || 'Автор не указан')}</div>
@@ -111,6 +121,8 @@ function displayOrders(orders) {
                         <strong>Адрес доставки:</strong> ${escapeHtml(order.shipping_address)}
                     </div>
                 ` : ''}
+                ${contactLine}
+                ${paymentLine}
                 ${order.customer_notes ? `
                     <div class="order-notes">
                         <strong>Комментарий:</strong> ${escapeHtml(order.customer_notes)}
