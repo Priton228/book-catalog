@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿// Страница оформления заказа
+﻿﻿﻿﻿﻿﻿﻿﻿﻿// Страница оформления заказа
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Checkout page loaded');
     initializeCheckoutEventListeners();
@@ -174,8 +174,7 @@ function showOrderConfirmation(order, formData) {
                 <p><strong>Адрес доставки:</strong> ${formData.shipping_address}</p>
                 <p><strong>Способ доставки:</strong> ${getShippingMethodText(formData.shipping_method)}</p>
                 <p><strong>Способ оплаты:</strong> ${getPaymentMethodText(formData.payment_method)}</p>
-            </div>
-            ${formData.customer_notes ? `<div class="order-notes"><strong>Комментарий:</strong> ${escapeHtml(formData.customer_notes)}</div>` : ''}
+                ${formData.customer_notes ? `<div class="order-notes"><strong>Комментарий:</strong> ${escapeHtml(formData.customer_notes)}</div>` : ''}
             </div>
             <div class="confirmation-actions">
                 <button onclick="window.location.href='/orders.html'" class="btn btn-primary">Мои заказы</button>

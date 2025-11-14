@@ -1,4 +1,4 @@
-﻿﻿﻿// Загрузка заказов при открытии страницы
+﻿﻿﻿﻿﻿// Загрузка заказов при открытии страницы
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Orders page loaded');
     initializeOrdersEventListeners();
@@ -74,6 +74,18 @@ function displayOrders(orders) {
 
     container.innerHTML = orders.map(order => {
         console.log('Processing order:', order);
+        
+        // Extract shipping method from shipping address if it exists
+        let shippingAddress = order.shipping_address || '';
+        let shippingMethod = '';
+        
+        // Check if shipping address contains shipping method information
+        const methodIndex = shippingAddress.indexOf('. Способ доставки: ');
+        if (methodIndex !== -1) {
+            shippingMethod = shippingAddress.substring(methodIndex + 19); // 19 is length of ". Способ доставки: "
+            shippingAddress = shippingAddress.substring(0, methodIndex);
+        }
+        
         const metaRaw = localStorage.getItem('order_meta_' + order.id);
         const meta = metaRaw ? JSON.parse(metaRaw) : null;
         const contactLine = (order.user_name || order.user_email || (meta && (meta.full_name || meta.phone || meta.email)))
@@ -81,6 +93,15 @@ function displayOrders(orders) {
             : '';
         const paymentLine = meta && meta.payment_method
             ? `<div class="order-address"><strong>Способ оплаты:</strong> ${escapeHtml(meta.payment_method)}</div>`
+            : '';
+        const shippingMethodLine = shippingMethod
+            ? `<div class="order-address"><strong>Способ доставки:</strong> ${escapeHtml(shippingMethod)}</div>`
+            : '';
+        const shippingAddressLine = shippingAddress
+            ? `<div class="order-address"><strong>Адрес доставки:</strong> ${escapeHtml(shippingAddress)}</div>`
+            : '';
+        const commentLine = order.customer_notes
+            ? `<div class="order-notes"><strong>Комментарий:</strong> ${escapeHtml(order.customer_notes)}</div>`
             : '';
         const defaultCover = 'https://i.pinimg.com/474x/e2/93/05/e29305e0ee7c3d1ef31ce6f234e194f8.jpg';
         return `
@@ -116,18 +137,11 @@ function displayOrders(orders) {
             </div>
             
             <div class="order-footer">
-                ${order.shipping_address ? `
-                    <div class="order-address">
-                        <strong>Адрес доставки:</strong> ${escapeHtml(order.shipping_address)}
-                    </div>
-                ` : ''}
                 ${contactLine}
+                ${shippingAddressLine}
+                ${shippingMethodLine}
                 ${paymentLine}
-                ${order.customer_notes ? `
-                    <div class="order-notes">
-                        <strong>Комментарий:</strong> ${escapeHtml(order.customer_notes)}
-                    </div>
-                ` : ''}
+                ${commentLine}
             </div>
         </div>
         `;
