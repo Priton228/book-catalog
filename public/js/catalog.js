@@ -14,13 +14,6 @@ const catalogFilters = { authors: new Set(), genres: new Set() };
 function initializeCatalogEventListeners() {
     console.log('🔧 Initializing catalog event listeners');
     
-    // Кнопка применения фильтров
-    const applyFiltersBtn = document.getElementById('apply-filters');
-    if (applyFiltersBtn) {
-        applyFiltersBtn.addEventListener('click', loadBooks);
-        console.log('Apply filters button listener added');
-    }
-    
     // Живой поиск: применяем ввёденный текст без Enter (дебаунс)
     const searchInput = document.getElementById('search-input');
     if (searchInput) {
@@ -38,7 +31,7 @@ function initializeCatalogEventListeners() {
         });
         console.log('Live search listener added');
     }
-
+    
     // Селект сортировки
     const sortSelect = document.getElementById('sort-select');
     if (sortSelect) {
@@ -54,7 +47,7 @@ function initializeCatalogEventListeners() {
             loadBooks();
         });
     }
-
+    
     // Выпадающие меню авторов/жанров
     ['authors','genres'].forEach(type => {
         const dropdown = document.getElementById(`${type}-dropdown`);
@@ -63,7 +56,7 @@ function initializeCatalogEventListeners() {
         const menu = dropdown.querySelector('.filter-menu');
         const searchInput = dropdown.querySelector('.filter-search-input');
         const list = dropdown.querySelector('.filter-list');
-
+        
         if (toggleBtn && menu) {
             toggleBtn.addEventListener('click', () => {
                 menu.style.display = (menu.style.display === 'none' || !menu.style.display) ? 'block' : 'none';
@@ -72,7 +65,7 @@ function initializeCatalogEventListeners() {
                 if (!dropdown.contains(e.target)) menu.style.display = 'none';
             });
         }
-
+        
         // Применение фильтра при изменении чекбокса
         if (list) {
             list.addEventListener('change', (e) => {
@@ -87,7 +80,7 @@ function initializeCatalogEventListeners() {
                 }
             });
         }
-
+        
         if (searchInput) {
             searchInput.addEventListener('input', () => {
                 const q = searchInput.value.toLowerCase();
