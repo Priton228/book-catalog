@@ -86,26 +86,44 @@ const updateUser = async (req, res) => {
   }
 };
 
-const deleteUser = async (req, res) => {
+const blockUser = async (req, res) => {
   try {
     const { id } = req.params;
     
-    // Проверяем, не пытается ли админ удалить самого себя
+    // Проверяем, не пытается ли админ заблокировать самого себя
     if (parseInt(id) === req.user.id) {
-      return res.status(400).json({ error: 'Нельзя удалить собственный аккаунт' });
+      return res.status(400).json({ error: 'Нельзя заблокировать собственный аккаунт' });
     }
     
-    const query = 'DELETE FROM users WHERE id = $1 RETURNING *';
+    const query = 'UPDATE users SET blocked = true WHERE id = $1 RETURNING *';
     const result = await pool.query(query, [id]);
     
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Пользователь не найден' });
     }
     
-    res.json({ message: 'Пользователь успешно удален' });
+    res.json({ message: 'Пользователь успешно заблокирован' });
   } catch (error) {
-    console.error('Delete user error:', error);
-    res.status(500).json({ error: 'Ошибка при удалении пользователя' });
+    console.error('Block user error:', error);
+    res.status(500).json({ error: 'Ошибка при блокировке пользователя' });
+  }
+};
+
+const unblockUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const query = 'UPDATE users SET blocked = false WHERE id = $1 RETURNING *';
+    const result = await pool.query(query, [id]);
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Пользователь не найден' });
+    }
+    
+    res.json({ message: 'Пользователь успешно разблокирован' });
+  } catch (error) {
+    console.error('Unblock user error:', error);
+    res.status(500).json({ error: 'Ошибка при разблокировке пользователя' });
   }
 };
 
@@ -329,7 +347,8 @@ module.exports = {
   getUserById,
   createUser,
   updateUser,
-  deleteUser,
+  blockUser,
+  unblockUser,
   
   // Book management
   getAllBooks,

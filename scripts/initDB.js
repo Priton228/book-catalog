@@ -1,4 +1,4 @@
-﻿﻿const { Client } = require('pg');
+﻿﻿﻿﻿const { Client } = require('pg');
 require('dotenv').config();
 
 async function initializeDatabase() {
@@ -66,6 +66,7 @@ async function initializeDatabase() {
                 password_hash VARCHAR(255) NOT NULL,
                 full_name VARCHAR(255),
                 role VARCHAR(50) DEFAULT 'customer' CHECK (role IN ('admin', 'customer')),
+                blocked BOOLEAN DEFAULT FALSE,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )

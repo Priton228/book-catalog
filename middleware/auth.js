@@ -17,6 +17,11 @@ const authenticate = async (req, res, next) => {
       return res.status(401).json({ error: 'Пользователь не найден' });
     }
 
+    // Проверяем, не заблокирован ли пользователь
+    if (user.blocked) {
+      return res.status(401).json({ error: 'Пользователь заблокирован' });
+    }
+
     req.user = user;
     next();
   } catch (error) {

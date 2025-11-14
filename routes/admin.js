@@ -7,7 +7,8 @@ const {
   getUserById,
   createUser,
   updateUser,
-  deleteUser,
+  blockUser,
+  unblockUser,
   
   // Book management
   getAllBooks,
@@ -52,7 +53,8 @@ router.get('/users', adminAuth, getAllUsers);
 router.get('/users/:id', adminAuth, getUserById);
 router.post('/users', adminAuth, createUser);
 router.put('/users/:id', adminAuth, updateUser);
-router.delete('/users/:id', adminAuth, deleteUser);
+router.delete('/users/:id', adminAuth, blockUser);
+router.patch('/users/:id/unblock', adminAuth, unblockUser);
 
 // Book management routes
 router.get('/books', adminAuth, getAllBooks);

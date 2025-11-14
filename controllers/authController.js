@@ -1,4 +1,4 @@
-﻿﻿const jwt = require('jsonwebtoken');
+﻿﻿﻿﻿const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
 const register = async (req, res) => {
@@ -65,6 +65,12 @@ const login = async (req, res) => {
     if (!user) {
       console.log('❌ Пользователь не найден:', email);
       return res.status(401).json({ error: 'Неверный email или пароль' });
+    }
+
+    // Проверяем, не заблокирован ли пользователь
+    if (user.blocked) {
+      console.log('❌ Пользователь заблокирован:', email);
+      return res.status(401).json({ error: 'Пользователь заблокирован' });
     }
 
     // Проверяем пароль

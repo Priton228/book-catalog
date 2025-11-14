@@ -490,6 +490,7 @@ function displayUsers(users) {
                             </div>
                         </div>
                     </div></th>
+                    <th><div class="th-inner"><span class="th-label">Статус</span></div></th>
                     <th><div class="th-inner"><span class="th-label">Действия</span></div></th>
                 </tr>
             </thead>
@@ -501,14 +502,18 @@ function displayUsers(users) {
     const usersList = document.getElementById('usersList');
     data.forEach(user => {
         const userRow = document.createElement('tr');
+        if (user.blocked) {
+            userRow.className = 'blocked-user';
+        }
         userRow.innerHTML = `
             <td>${user.id}</td>
             <td>${user.email}</td>
             <td>${user.full_name || ''}</td>
             <td>${user.role}</td>
+            <td>${user.blocked ? '<span class="blocked-badge">Заблокирован</span>' : '<span class="active-badge">Активен</span>'}</td>
             <td class="admin-actions">
                 <button onclick="editUser(${user.id})" class="btn-small btn-edit">Редактировать</button>
-                <button onclick="deleteUser(${user.id})" class="btn-small btn-delete">Удалить</button>
+                ${user.blocked ? `<button onclick="unblockUser(${user.id})" class="btn-small btn-primary">Разблокировать</button>` : `<button onclick="blockUser(${user.id})" class="btn-small btn-delete">Заблокировать</button>`}
             </td>
         `;
         usersList.appendChild(userRow);
@@ -571,9 +576,9 @@ async function createUser() {
     }
 }
 
-// Функция для удаления пользователя
-async function deleteUser(userId) {
-    if (!confirm('Вы уверены, что хотите удалить этого пользователя?')) {
+// Функция для блокировки пользователя
+async function blockUser(userId) {
+    if (!confirm('Вы уверены, что хотите заблокировать этого пользователя?')) {
         return;
     }
     
@@ -588,11 +593,42 @@ async function deleteUser(userId) {
         
         if (response.ok) {
             loadUsers();
+            showMessage('Пользователь успешно заблокирован', 'success');
         } else {
-            alert('Ошибка при удалении пользователя');
+            const error = await response.json();
+            showMessage('Ошибка при блокировке пользователя: ' + (error.error || 'Неизвестная ошибка'), 'error');
         }
     } catch (error) {
-        console.error('Error deleting user:', error);
+        console.error('Error blocking user:', error);
+        showMessage('Ошибка при блокировке пользователя', 'error');
+    }
+}
+
+// Функция для разблокировки пользователя
+async function unblockUser(userId) {
+    if (!confirm('Вы уверены, что хотите разблокировать этого пользователя?')) {
+        return;
+    }
+    
+    try {
+        const token = localStorage.getItem('authToken');
+        const response = await fetch(`/api/admin/users/${userId}/unblock`, {
+            method: 'PATCH',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (response.ok) {
+            loadUsers();
+            showMessage('Пользователь успешно разблокирован', 'success');
+        } else {
+            const error = await response.json();
+            showMessage('Ошибка при разблокировке пользователя: ' + (error.error || 'Неизвестная ошибка'), 'error');
+        }
+    } catch (error) {
+        console.error('Error unblocking user:', error);
+        showMessage('Ошибка при разблокировке пользователя', 'error');
     }
 }
 
@@ -1736,7 +1772,8 @@ window.logout = logout;
 window.showCreateUserForm = showCreateUserForm;
 window.hideCreateUserForm = hideCreateUserForm;
 window.createUser = createUser;
-window.deleteUser = deleteUser;
+window.blockUser = blockUser;
+window.unblockUser = unblockUser;
 window.editUser = editUser;
 window.hideEditUserForm = hideEditUserForm;
 window.submitEditUser = submitEditUser;

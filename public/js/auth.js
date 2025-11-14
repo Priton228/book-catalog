@@ -6,6 +6,7 @@ let currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
 document.addEventListener('DOMContentLoaded', function() {
     initializeEventListeners();
     updateAuthUI();
+    checkBlockedUser();
 });
 
 // Инициализация обработчиков событий
@@ -79,6 +80,9 @@ function updateAuthUI() {
         if (typeof updateCartIcon === 'function') {
             updateCartIcon();
         }
+        
+        // Проверить, заблокирован ли пользователь
+        checkBlockedUser();
     } else {
         if (authButtons) authButtons.style.display = 'flex';
         if (userMenu) userMenu.style.display = 'none';
@@ -151,12 +155,23 @@ async function handleLogin(e) {
             
             closeModals();
             updateAuthUI();
-            showMessage('Успешный вход!', 'success');
+            
+            // Проверить, заблокирован ли пользователь
+            if (currentUser.blocked) {
+                showMessage('Ваш аккаунт заблокирован. Обратитесь к администратору.', 'error');
+            } else {
+                showMessage('Успешный вход!', 'success');
+            }
             
             // Очищаем форму
             document.getElementById('login-form').reset();
         } else {
-            showMessage(data.error, 'error');
+            // Проверяем, заблокирован ли пользователь
+            if (data.error === 'Пользователь заблокирован') {
+                showMessage('Ваш аккаунт заблокирован. Обратитесь к администратору.', 'error');
+            } else {
+                showMessage(data.error, 'error');
+            }
         }
     } catch (error) {
         console.error('Login error:', error);
@@ -299,6 +314,13 @@ async function handleResetPassword(e) {
     }
 }
 
+// Проверка, заблокирован ли текущий пользователь
+function checkBlockedUser() {
+    if (currentUser && currentUser.blocked) {
+        showMessage('Ваш аккаунт заблокирован. Обратитесь к администратору.', 'error');
+    }
+}
+
 // Показать сообщение
 function showMessage(message, type = 'info') {
     // Создаем элемент сообщения
@@ -347,6 +369,8 @@ function handleAuthError(response, data) {
     if (response.status === 401) {
         if (data && data.expired) {
             showMessage('Сессия истекла. Пожалуйста, войдите заново.', 'warning');
+        } else if (data && data.error === 'Пользователь заблокирован') {
+            showMessage('Ваш аккаунт заблокирован. Обратитесь к администратору.', 'error');
         } else {
             showMessage('Необходима авторизация', 'warning');
         }
