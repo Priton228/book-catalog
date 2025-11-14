@@ -1,4 +1,4 @@
-﻿const { Client } = require('pg');
+﻿﻿const { Client } = require('pg');
 require('dotenv').config();
 
 async function initializeDatabase() {
@@ -119,7 +119,7 @@ async function initializeDatabase() {
                 total_amount DECIMAL(10,2) NOT NULL,
                 status VARCHAR(50) DEFAULT 'pending' CHECK (status IN ('pending', 'confirmed', 'shipped', 'delivered', 'cancelled')),
                 shipping_address TEXT,
-                customer_notes TEXT,
+                customer_notes TEXT, -- Customer comments and special requests
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )

@@ -1,4 +1,4 @@
-﻿﻿﻿﻿// Страница оформления заказа
+﻿﻿﻿﻿﻿﻿﻿﻿// Страница оформления заказа
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Checkout page loaded');
     initializeCheckoutEventListeners();
@@ -105,8 +105,9 @@ async function handleCheckoutSubmit(e) {
                 book_id: parseInt(item.bookId),
                 quantity: parseInt(item.quantity)
             })),
-            shipping_address: `${formData.shipping_address}. Способ доставки: ${getShippingMethodText(formData.shipping_method)}`,
-            customer_notes: `${formData.customer_notes || ''}`
+            shipping_address: formData.shipping_address,
+            shipping_method: getShippingMethodText(formData.shipping_method),
+            customer_notes: formData.customer_notes || ''
         };
 
         console.log('Sending order:', orderData);
@@ -173,7 +174,8 @@ function showOrderConfirmation(order, formData) {
                 <p><strong>Адрес доставки:</strong> ${formData.shipping_address}</p>
                 <p><strong>Способ доставки:</strong> ${getShippingMethodText(formData.shipping_method)}</p>
                 <p><strong>Способ оплаты:</strong> ${getPaymentMethodText(formData.payment_method)}</p>
-                ${formData.customer_notes ? `<p><strong>Комментарий:</strong> ${escapeHtml(formData.customer_notes)}</p>` : ''}
+            </div>
+            ${formData.customer_notes ? `<div class="order-notes"><strong>Комментарий:</strong> ${escapeHtml(formData.customer_notes)}</div>` : ''}
             </div>
             <div class="confirmation-actions">
                 <button onclick="window.location.href='/orders.html'" class="btn btn-primary">Мои заказы</button>
@@ -182,7 +184,9 @@ function showOrderConfirmation(order, formData) {
         </div>
     `;
     
-    document.querySelector('.checkout-content').innerHTML = confirmationHTML;
+    const checkoutContent = document.querySelector('.checkout-content');
+    checkoutContent.innerHTML = confirmationHTML;
+    checkoutContent.classList.add('centered');
 }
 
 // Вспомогательные функции

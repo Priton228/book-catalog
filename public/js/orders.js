@@ -1,4 +1,4 @@
-﻿﻿// Загрузка заказов при открытии страницы
+﻿﻿﻿// Загрузка заказов при открытии страницы
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Orders page loaded');
     initializeOrdersEventListeners();

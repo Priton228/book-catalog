@@ -563,6 +563,13 @@ body {
     gap: 2rem;
 }
 
+.checkout-content.centered {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 400px;
+}
+
 .checkout-order-info {
     background: white;
     border-radius: 8px;
@@ -727,6 +734,8 @@ body {
     padding: 2rem;
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     text-align: center;
+    max-width: 600px;
+    margin: 2rem auto;
 }
 
 .order-confirmation h3 {
@@ -746,10 +755,54 @@ body {
     margin: 0.5rem 0;
 }
 
+.confirmation-details .order-notes {
+    color: #7f8c8d;
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+    padding: 0;
+    background-color: transparent;
+    border-radius: 0;
+}
+
+.confirmation-details .order-notes strong {
+    color: #7f8c8d;
+    font-weight: bold;
+}
+
 .confirmation-actions {
     display: flex;
     gap: 1rem;
     justify-content: center;
+    margin-top: 1rem;
+}
+
+.confirmation-actions .btn {
+    min-width: 150px;
+    padding: 0.75rem 1rem;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.confirmation-actions .btn-outline {
+    background: transparent;
+    color: #3498db;
+    border: 2px solid #3498db;
+}
+
+.confirmation-actions .btn-outline:hover {
+    background: #3498db;
+    color: white;
+}
+
+.confirmation-actions .btn:focus-visible {
+    outline: 2px solid #3498db;
+    outline-offset: 2px;
 }
 
 /* Стили для заказов */
@@ -877,6 +930,20 @@ body {
 .order-address {
     color: #7f8c8d;
     font-size: 0.9rem;
+}
+
+.order-notes {
+    color: #7f8c8d;
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+    padding-left: 0;
+    background-color: transparent;
+    border-radius: 0;
+}
+
+.order-notes strong {
+    color: #7f8c8d;
+    font-weight: bold;
 }
 
 .order-item-cover {
@@ -1143,6 +1210,22 @@ body {
     
     .form-actions .btn {
         width: 100%;
+    }
+    
+    .confirmation-actions {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .confirmation-actions .btn {
+        width: 100%;
+        max-width: 300px;
+        margin-bottom: 0.5rem;
+    }
+    
+    .order-confirmation {
+        margin: 1rem;
+        padding: 1rem;
     }
     .header .container {
         flex-direction: column;

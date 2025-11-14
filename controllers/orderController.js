@@ -1,8 +1,8 @@
-﻿const Order = require('../models/Order');
+﻿﻿const Order = require('../models/Order');
 
 const createOrder = async (req, res) => {
   try {
-    const { items, shipping_address, customer_notes } = req.body;
+    const { items, shipping_address, shipping_method, customer_notes } = req.body;
     const user_id = req.user.id;
 
     console.log('🛒 Создание заказа для пользователя:', user_id, 'Товары:', items);
@@ -15,11 +15,16 @@ const createOrder = async (req, res) => {
       return res.status(400).json({ error: 'Адрес доставки обязателен' });
     }
 
-    // Создаем заказ
+    // Combine shipping address and method properly
+    const full_shipping_address = shipping_method 
+      ? `${shipping_address}. Способ доставки: ${shipping_method}`
+      : shipping_address;
+
+    // Create order with separated data
     const order = await Order.create({
       user_id,
       items,
-      shipping_address,
+      shipping_address: full_shipping_address,
       customer_notes
     });
 
