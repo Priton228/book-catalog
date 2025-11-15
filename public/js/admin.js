@@ -490,7 +490,6 @@ function displayUsers(users) {
                             </div>
                         </div>
                     </div></th>
-                    <th><div class="th-inner"><span class="th-label">Статус</span></div></th>
                     <th><div class="th-inner"><span class="th-label">Действия</span></div></th>
                 </tr>
             </thead>
@@ -510,7 +509,6 @@ function displayUsers(users) {
             <td>${user.email}</td>
             <td>${user.full_name || ''}</td>
             <td>${user.role}</td>
-            <td>${user.blocked ? '<span class="blocked-badge">Заблокирован</span>' : '<span class="active-badge">Активен</span>'}</td>
             <td class="admin-actions">
                 <button onclick="editUser(${user.id})" class="btn-small btn-edit">Редактировать</button>
                 ${user.blocked ? `<button onclick="unblockUser(${user.id})" class="btn-small btn-primary">Разблокировать</button>` : `<button onclick="blockUser(${user.id})" class="btn-small btn-delete">Заблокировать</button>`}
