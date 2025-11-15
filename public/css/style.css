@@ -1166,13 +1166,12 @@ body {
 .users-table td {
   vertical-align: top;
 }
-/* Columns: ID, Email, Name, Role, Status, Actions */
+/* Columns: ID, Email, Name, Role, Actions */
 .users-table th:nth-child(1), .users-table td:nth-child(1) { width: 55px; white-space: nowrap; }
 .users-table th:nth-child(2), .users-table td:nth-child(2) { width: 300px; white-space: normal; word-break: break-word; overflow-wrap: anywhere; }
 .users-table th:nth-child(3), .users-table td:nth-child(3) { width: 260px; white-space: normal; word-break: break-word; overflow-wrap: anywhere; }
 .users-table th:nth-child(4), .users-table td:nth-child(4) { width: 120px; white-space: nowrap; }
-.users-table th:nth-child(5), .users-table td:nth-child(5) { width: 100px; }
-.users-table th:nth-child(6), .users-table td:nth-child(6) { width: 160px; }
+.users-table th:nth-child(5), .users-table td:nth-child(5) { width: 160px; }
 .users-table .admin-actions { align-items: flex-end; }
 
 /* Orange edit buttons for authors and genres */
@@ -1184,30 +1183,10 @@ body {
   filter: brightness(0.95);
 }
 
-/* Blocked user badge */
-.blocked-badge {
-    background-color: #e74c3c;
-    color: white;
-    padding: 0.25rem 0.5rem;
-    border-radius: 4px;
-    font-size: 0.8rem;
-    font-weight: bold;
-}
-
 /* Highlight blocked users in table */
 .users-table tr.blocked-user {
     background-color: #fdf0f0;
     border-left: 3px solid #e74c3c;
-}
-
-/* Active user badge */
-.active-badge {
-    background-color: #27ae60;
-    color: white;
-    padding: 0.25rem 0.5rem;
-    border-radius: 4px;
-    font-size: 0.8rem;
-    font-weight: bold;
 }
 
 /* Responsive */
