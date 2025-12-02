@@ -78,6 +78,8 @@ class Order {
             'book_id', oi.book_id,
             'title', b.title,
             'author_name', a.name,
+            'genre_id', g.id,
+            'genre_name', g.name,
             'cover_image', b.cover_image,
             'quantity', oi.quantity,
             'unit_price', oi.unit_price,
@@ -89,6 +91,7 @@ class Order {
       LEFT JOIN order_items oi ON o.id = oi.order_id
       LEFT JOIN books b ON oi.book_id = b.id
       LEFT JOIN authors a ON b.author_id = a.id
+      LEFT JOIN genres g ON b.genre_id = g.id
       WHERE o.user_id = $1
       GROUP BY o.id, u.email, u.full_name
       ORDER BY o.created_at DESC
@@ -109,6 +112,8 @@ class Order {
             'book_id', oi.book_id,
             'title', b.title,
             'author_name', a.name,
+            'genre_id', g.id,
+            'genre_name', g.name,
             'cover_image', b.cover_image,
             'quantity', oi.quantity,
             'unit_price', oi.unit_price,
@@ -120,6 +125,7 @@ class Order {
       LEFT JOIN order_items oi ON o.id = oi.order_id
       LEFT JOIN books b ON oi.book_id = b.id
       LEFT JOIN authors a ON b.author_id = a.id
+      LEFT JOIN genres g ON b.genre_id = g.id
       WHERE o.id = $1
       GROUP BY o.id, u.email, u.full_name
     `;

@@ -62,6 +62,29 @@ const getAllBooks = async (req, res) => {
   }
 };
 
+const getPopularBooks = async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT 
+        b.*,
+        a.name as author_name,
+        g.name as genre_name,
+        COALESCE(SUM(oi.quantity), 0) as total_sold
+      FROM books b
+      LEFT JOIN authors a ON b.author_id = a.id
+      LEFT JOIN genres g ON b.genre_id = g.id
+      LEFT JOIN order_items oi ON oi.book_id = b.id
+      WHERE b.is_active = true
+      GROUP BY b.id, a.name, g.name
+      ORDER BY total_sold DESC, b.title
+    `);
+    res.json({ books: result.rows });
+  } catch (error) {
+    console.error('Get popular books error:', error);
+    res.status(500).json({ error: 'Ошибка при получении популярных книг' });
+  }
+};
+
 const getBookById = async (req, res) => {
   try {
     const book = await pool.query(`
@@ -88,5 +111,6 @@ const getBookById = async (req, res) => {
 
 module.exports = {
   getAllBooks,
-  getBookById
+  getBookById,
+  getPopularBooks
 };
