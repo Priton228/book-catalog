@@ -333,7 +333,80 @@ const getStatistics = async (req, res) => {
     `);
     
     stats.popularBooks = popularBooks.rows;
-    
+
+    // Распределение заказов по статусам
+    const ordersByStatus = await pool.query(`
+      SELECT status, COUNT(*)::int as count
+      FROM orders
+      GROUP BY status
+    `);
+    stats.ordersByStatus = ordersByStatus.rows;
+
+    // Выручка по жанрам (топ-8)
+    const revenueByGenre = await pool.query(`
+      SELECT 
+        g.name as genre_name,
+        COALESCE(SUM(oi.quantity * oi.unit_price), 0)::float as revenue
+      FROM order_items oi
+      JOIN books b ON oi.book_id = b.id
+      JOIN genres g ON b.genre_id = g.id
+      GROUP BY g.id, g.name
+      ORDER BY revenue DESC
+      LIMIT 8
+    `);
+    stats.revenueByGenre = revenueByGenre.rows;
+
+    // Топ авторы по количеству проданных экземпляров (топ-8)
+    const topAuthors = await pool.query(`
+      SELECT 
+        a.name as author_name,
+        COALESCE(SUM(oi.quantity), 0)::int as total_sold
+      FROM order_items oi
+      JOIN books b ON oi.book_id = b.id
+      JOIN authors a ON b.author_id = a.id
+      GROUP BY a.id, a.name
+      ORDER BY total_sold DESC
+      LIMIT 8
+    `);
+    stats.topAuthors = topAuthors.rows;
+
+    // Средний и медианный чек (исключая отмененные)
+    const avgOrder = await pool.query(`
+      SELECT AVG(total_amount)::float as avg_value FROM orders WHERE status != 'cancelled'
+    `);
+    const medianOrder = await pool.query(`
+      SELECT percentile_disc(0.5) WITHIN GROUP (ORDER BY total_amount)::float as median_value
+      FROM orders WHERE status != 'cancelled'
+    `);
+    stats.avgOrderValue = parseFloat(avgOrder.rows[0].avg_value || 0);
+    stats.medianOrderValue = parseFloat(medianOrder.rows[0].median_value || 0);
+
+    // Возвращающиеся клиенты
+    const returning = await pool.query(`
+      SELECT COUNT(*)::int AS count FROM (
+        SELECT user_id FROM orders GROUP BY user_id HAVING COUNT(*) > 1
+      ) t
+    `);
+    const customersWithOrders = await pool.query(`
+      SELECT COUNT(DISTINCT user_id)::int AS count FROM orders
+    `);
+    const ret = returning.rows[0].count || 0;
+    const cust = customersWithOrders.rows[0].count || 0;
+    stats.returningCustomers = ret;
+    stats.returningRate = cust > 0 ? Math.round((ret / cust) * 100) : 0;
+
+    // Новые пользователи за 30 дней
+    const newUsers30d = await pool.query(`
+      SELECT COUNT(*)::int AS count FROM users WHERE created_at >= NOW() - INTERVAL '30 days'
+    `);
+    stats.newUsers30d = newUsers30d.rows[0].count || 0;
+
+    // Низкие остатки на складе (меньше 5)
+    const lowStock = await pool.query(`
+      SELECT COUNT(*)::int AS count FROM books WHERE stock_quantity < 5 AND is_active = true
+    `);
+    stats.lowStockCount = lowStock.rows[0].count || 0;
+
     res.json(stats);
   } catch (error) {
     console.error('Get statistics error:', error);

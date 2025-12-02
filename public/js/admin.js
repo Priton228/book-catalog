@@ -356,57 +356,173 @@ function attachSortHandlers(container, section) {
 async function loadDashboard() {
     try {
         const token = localStorage.getItem('authToken');
-        
-        // Загружаем данные для статистики
-        const [usersResponse, booksResponse, ordersResponse] = await Promise.all([
-            fetch('/api/admin/users', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            }),
-            fetch('/api/admin/books', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            }),
-            fetch('/api/admin/orders', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            })
-        ]);
-        
-        let totalUsers = 0, totalBooks = 0, totalOrders = 0;
-        
-        if (usersResponse.ok) {
-            const users = await usersResponse.json();
-            totalUsers = users.length;
-        }
-        
-        if (booksResponse.ok) {
-            const books = await booksResponse.json();
-            totalBooks = books.length;
-        }
-        
-        if (ordersResponse.ok) {
-            const orders = await ordersResponse.json();
-            totalOrders = orders.length;
-        }
-        
+        const response = await fetch('/api/admin/statistics', { headers: { 'Authorization': `Bearer ${token}` } });
+        const stats = await response.json();
+        if (!response.ok) throw new Error(stats.error || 'Ошибка статистики');
         const statsContainer = document.getElementById('stats-container');
+        const totalRevenue = Number(stats.totalRevenue || 0).toFixed(2);
+        const avgOrder = Number(stats.avgOrderValue || 0).toFixed(2);
         statsContainer.innerHTML = `
-            <div class="stat-card">
-                <div class="stat-number" id="totalUsers">${totalUsers}</div>
-                <div class="stat-label">Всего пользователей</div>
+            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; grid-column: 1 / -1;">
+                <div class="stat-card"><div class="stat-number">${stats.users || 0}</div><div class="stat-label">Пользователи</div></div>
+                <div class="stat-card"><div class="stat-number">${stats.books || 0}</div><div class="stat-label">Активные книги</div></div>
+                <div class="stat-card"><div class="stat-number">${stats.orders || 0}</div><div class="stat-label">Заказы</div></div>
+                <div class="stat-card"><div class="stat-number">${totalRevenue} ₽</div><div class="stat-label">Выручка</div></div>
+                ${Number(avgOrder)>0 ? `<div class="stat-card"><div class="stat-number">${avgOrder} ₽</div><div class="stat-label">Средний чек</div></div>` : ''}
             </div>
-            <div class="stat-card">
-                <div class="stat-number" id="totalBooks">${totalBooks}</div>
-                <div class="stat-label">Всего книг</div>
+
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 20px; grid-column: 1 / -1; margin-top: 20px;">
+                <div style="background:#fff; padding: 20px; border-radius:8px; box-shadow:0 2px 10px rgba(0,0,0,0.1);">
+                    <h3 style="margin-bottom:10px; color:#2c3e50;">Заказы по дням (30 дней)</h3>
+                    <canvas id="chart-orders-count" style="width:100%; height:260px;"></canvas>
+                </div>
+                <div style="background:#fff; padding: 20px; border-radius:8px; box-shadow:0 2px 10px rgba(0,0,0,0.1);">
+                    <h3 style="margin-bottom:10px; color:#2c3e50;">Выручка по дням (30 дней)</h3>
+                    <canvas id="chart-revenue" style="width:100%; height:260px;"></canvas>
+                </div>
             </div>
-            <div class="stat-card">
-                <div class="stat-number" id="totalOrders">${totalOrders}</div>
-                <div class="stat-label">Всего заказов</div>
+
+            <div style="grid-column: 1 / -1; background:#fff; padding: 20px; border-radius:8px; box-shadow:0 2px 10px rgba(0,0,0,0.1); margin-top:20px;">
+                <h3 style="margin-bottom:10px; color:#2c3e50;">Топ-5 книг (круговая)</h3>
+                <canvas id="chart-top-books" style="width:100%; height:300px;"></canvas>
             </div>
         `;
-        
+        const ordersByDay = Array.isArray(stats.ordersByDay) ? stats.ordersByDay.slice().reverse() : [];
+        const labelsDays = ordersByDay.map(x => new Date(x.date).toLocaleDateString('ru-RU'));
+        const countsDays = ordersByDay.map(x => Number(x.count || 0));
+        const revenueDays = ordersByDay.map(x => Number(x.revenue || 0));
+        const topBooks = Array.isArray(stats.popularBooks) ? stats.popularBooks : [];
+        const labelsBooks = topBooks.map(x => (x.title || '').slice(0,24));
+        const valuesBooks = topBooks.map(x => Number(x.total_sold || 0));
+        drawBars(document.getElementById('chart-orders-count'), labelsDays, countsDays, { color: '#3498db' });
+        drawBars(document.getElementById('chart-revenue'), labelsDays, revenueDays, { color: '#27ae60' });
+        drawBars(document.getElementById('chart-top-books'), labelsBooks, valuesBooks, { color: '#9b59b6' });
+
+        // Circle chart: top books
+        drawDonut(document.getElementById('chart-top-books'), labelsBooks, valuesBooks, { colors: ['#3498db','#2ecc71','#f1c40f','#9b59b6','#e74c3c'] });
     } catch (error) {
-        console.error('Error loading dashboard:', error);
         document.getElementById('stats-container').innerHTML = '<div class="error">Ошибка загрузки статистики</div>';
     }
+}
+
+function drawBars(canvas, labels, values, opts) {
+    if (!canvas || !labels || !values) return;
+    const prep = prepareHiDPI(canvas);
+    const ctx = prep.ctx; const w = prep.w; const h = prep.h;
+    ctx.clearRect(0,0,w,h);
+    const padL = 50, padR = 20, padT = 20, padB = 40;
+    const plotW = w - padL - padR;
+    const plotH = h - padT - padB;
+    ctx.strokeStyle = '#ccc';
+    ctx.beginPath();
+    ctx.moveTo(padL, padT);
+    ctx.lineTo(padL, padT + plotH);
+    ctx.lineTo(padL + plotW, padT + plotH);
+    ctx.stroke();
+    const maxVal = Math.max(1, ...values);
+    const barCount = values.length;
+    const gap = 8;
+    const barW = Math.max(10, Math.floor((plotW - gap*(barCount+1)) / Math.max(1, barCount)));
+    ctx.fillStyle = opts && opts.color ? opts.color : '#3498db';
+    for (let i=0;i<barCount;i++) {
+        const x = padL + gap + i*(barW+gap);
+        const val = values[i];
+        const bh = Math.round((val/maxVal) * (plotH-2));
+        const y = padT + plotH - bh;
+        ctx.fillRect(x, y, barW, bh);
+    }
+    ctx.fillStyle = '#333';
+    ctx.font = '12px Arial';
+    for (let i=0;i<barCount;i++) {
+        const x = padL + gap + i*(barW+gap) + barW/2;
+        const lbl = labels[i] || '';
+        const val = values[i] || 0;
+        ctx.save();
+        ctx.translate(x, padT + plotH + 14);
+        ctx.rotate(-Math.PI/6);
+        ctx.textAlign = 'right';
+        ctx.fillText(String(lbl), 0, 0);
+        ctx.restore();
+        ctx.textAlign = 'center';
+        ctx.fillText(String(val), padL + gap + i*(barW+gap) + barW/2, yPosForValue(values[i], padT, plotH, maxVal));
+    }
+    function yPosForValue(v, padTop, plotHeight, maxV) {
+        const bh = Math.round((v/Math.max(1,maxV)) * (plotHeight-2));
+        return padTop + plotHeight - bh - 6;
+    }
+}
+
+function drawDonut(canvas, labels, values, opts) {
+    if (!canvas || !labels || !values || values.length === 0) return;
+    const prep = prepareHiDPI(canvas);
+    const ctx = prep.ctx; const w = prep.w; const h = prep.h;
+    ctx.clearRect(0,0,w,h);
+    const cx = w/2, cy = h/2, r = Math.min(w,h)/2 - 20, ir = r*0.55;
+    const sum = values.reduce((s,v)=>s+v,0) || 1;
+    const colors = (opts && opts.colors) || ['#3498db','#2ecc71','#f1c40f','#9b59b6','#e74c3c','#34495e','#1abc9c'];
+    let start = -Math.PI/2;
+    for (let i=0;i<values.length;i++) {
+        const angle = (values[i]/sum) * Math.PI*2;
+        ctx.beginPath();
+        ctx.moveTo(cx,cy);
+        ctx.arc(cx,cy,r,start,start+angle);
+        ctx.closePath();
+        ctx.fillStyle = colors[i % colors.length];
+        ctx.fill();
+        start += angle;
+    }
+    ctx.globalCompositeOperation = 'destination-out';
+    ctx.beginPath();
+    ctx.arc(cx,cy,ir,0,Math.PI*2);
+    ctx.fill();
+    ctx.globalCompositeOperation = 'source-over';
+    // Legend
+    ctx.font = '12px Arial';
+    ctx.textAlign = 'left';
+    let lx = 10, ly = 10;
+    for (let i=0;i<labels.length;i++) {
+        ctx.fillStyle = colors[i % colors.length];
+        ctx.fillRect(lx, ly, 12, 12);
+        ctx.fillStyle = '#333';
+        ctx.fillText(`${labels[i]} — ${values[i]}`, lx+16, ly+11);
+        ly += 16;
+    }
+}
+
+function drawHorizontalBars(canvas, labels, values, opts) {
+    if (!canvas || !labels || !values) return;
+    const prep = prepareHiDPI(canvas);
+    const ctx = prep.ctx; const w = prep.w; const h = prep.h;
+    ctx.clearRect(0,0,w,h);
+    const padL = 120, padR = 20, padT = 20, padB = 20;
+    const plotW = w - padL - padR;
+    const plotH = h - padT - padB;
+    const maxVal = Math.max(1, ...values);
+    const rowH = Math.max(18, Math.floor(plotH / Math.max(1, values.length)) - 6);
+    ctx.fillStyle = opts && opts.color ? opts.color : '#3498db';
+    ctx.font = '12px Arial';
+    ctx.textAlign = 'right';
+    for (let i=0;i<values.length;i++) {
+        const y = padT + i*(rowH+6);
+        const bw = Math.round((values[i]/maxVal) * (plotW-4));
+        ctx.fillRect(padL, y, bw, rowH);
+        ctx.fillStyle = '#333';
+        ctx.fillText(String(labels[i]).slice(0,24), padL - 6, y + rowH - 4);
+        ctx.textAlign = 'left';
+        ctx.fillText(String(values[i]), padL + bw + 6, y + rowH - 4);
+        ctx.textAlign = 'right';
+        ctx.fillStyle = opts && opts.color ? opts.color : '#3498db';
+    }
+}
+
+function prepareHiDPI(canvas) {
+    const dpr = window.devicePixelRatio || 1;
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = Math.round(rect.width * dpr);
+    canvas.height = Math.round(rect.height * dpr);
+    const ctx = canvas.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    return { ctx, w: rect.width, h: rect.height };
 }
 
 // Функция для загрузки пользователей

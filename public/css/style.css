@@ -315,6 +315,11 @@ body {
     max-width: min(270px, 80vw);
     overflow-x: auto;
 }
+/* Genres dropdown: align to the right of toggle so it expands left */
+#genres-dropdown .filter-menu {
+    right: 0;
+    left: auto;
+}
 .filter-dropdown .filter-search { padding: 6px 8px; border-bottom: 1px solid #eee; margin-bottom: 6px; }
 .filter-dropdown .filter-search-input { width: 100%; font-size: 12px; padding: 6px 8px; border: 1px solid #d0d7de; border-radius: 4px; }
 .filter-dropdown .filter-list { max-height: 100px; overflow-y: auto; margin-bottom: 6px; padding: 0; }
