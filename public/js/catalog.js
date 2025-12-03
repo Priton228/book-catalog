@@ -199,7 +199,7 @@ function displayBooks(books) {
             <div class="book-title">${safeTitle}</div>
             <div class="book-author">${safeAuthor}</div>
             <div class="book-genre">${safeGenre}</div>
-            <div class="book-price">${book.price ? book.price + ' ₽' : 'Цена не указана'}</div>
+            <div class="book-price">${book.price ? book.price + ' р' : 'Цена не указана'}</div>
             <div class="book-stock">В наличии: ${book.stock_quantity || 0} шт.</div>
             ${book.description ? `
                 <div class="book-description">

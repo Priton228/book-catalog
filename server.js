@@ -13,12 +13,10 @@ const adminRoutes = require('./routes/admin');
 
 const app = express();
 
-// Middleware - БЕЗ Helmet!
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Статические файлы - РАБОЧАЯ ВЕРСИЯ
 app.use(express.static('public'));
 
 // API Routes
@@ -78,8 +76,8 @@ app.use('*', (req, res) => {
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
-    console.log(`✅ Сервер запущен на порту ${PORT}`);
-    console.log(`🌐 Главная страница: http://localhost:${PORT}`);
-    console.log(`📚 Каталог книг: http://localhost:${PORT}/catalog.html`);
-    console.log(`🎨 CSS работает!`);
+    console.log(`Сервер запущен на порту ${PORT}`);
+    console.log(`Главная страница: http://localhost:${PORT}`);
+    console.log(`Каталог книг: http://localhost:${PORT}/catalog.html`);
+    console.log(`CSS работает!`);
 });

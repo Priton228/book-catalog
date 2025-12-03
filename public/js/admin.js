@@ -400,8 +400,8 @@ async function loadDashboard() {
                 <div class="stat-card"><div class="stat-number">${stats.users || 0}</div><div class="stat-label">Пользователи</div></div>
                 <div class="stat-card"><div class="stat-number">${stats.books || 0}</div><div class="stat-label">Активные книги</div></div>
                 <div class="stat-card"><div class="stat-number">${stats.orders || 0}</div><div class="stat-label">Заказы</div></div>
-                <div class="stat-card"><div class="stat-number">${totalRevenue} ₽</div><div class="stat-label">Выручка</div></div>
-                ${Number(avgOrder)>0 ? `<div class="stat-card"><div class="stat-number">${avgOrder} ₽</div><div class="stat-label">Средний чек</div></div>` : ''}
+                <div class="stat-card"><div class="stat-number">${totalRevenue} р</div><div class="stat-label">Выручка</div></div>
+                ${Number(avgOrder)>0 ? `<div class="stat-card"><div class="stat-number">${avgOrder} р</div><div class="stat-label">Средний чек</div></div>` : ''}
                 ${topGenre ? `<div class="stat-card"><div class="stat-number" style="font-size:1.1em; white-space:normal; overflow:visible; text-overflow:clip; word-break:break-word;">${topGenre}</div><div class="stat-label">Топ жанр</div></div>` : ''}
                 ${topAuthor ? `<div class="stat-card"><div class="stat-number" style="font-size:1.1em; white-space:normal; overflow:visible; text-overflow:clip; word-break:break-word;">${topAuthor}</div><div class="stat-label">Топ автор</div></div>` : ''}
                 ${topBookTitle ? `<div class="stat-card"><div class="stat-number" style="font-size:1.1em; white-space:normal; overflow:visible; text-overflow:clip; word-break:break-word;">${topBookTitle}</div><div class="stat-label">Топ книга</div></div>` : ''}
@@ -511,8 +511,8 @@ function renderDashboard(stats) {
             <div class="stat-card"><div class="stat-number">${stats.users || 0}</div><div class="stat-label">Пользователи</div></div>
             <div class="stat-card"><div class="stat-number">${stats.books || 0}</div><div class="stat-label">Активные книги</div></div>
             <div class="stat-card"><div class="stat-number">${stats.orders || 0}</div><div class="stat-label">Заказы</div></div>
-            <div class="stat-card"><div class="stat-number">${totalRevenue} ₽</div><div class="stat-label">Выручка</div></div>
-            ${Number(avgOrder)>0 ? `<div class="stat-card"><div class="stat-number">${avgOrder} ₽</div><div class="stat-label">Средний чек</div></div>` : ''}
+            <div class="stat-card"><div class="stat-number">${totalRevenue} р</div><div class="stat-label">Выручка</div></div>
+            ${Number(avgOrder)>0 ? `<div class="stat-card"><div class="stat-number">${avgOrder} р</div><div class="stat-label">Средний чек</div></div>` : ''}
         </div>
 
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 20px; grid-column: 1 / -1; margin-top: 20px;">

@@ -2,7 +2,7 @@ const pool = require('../config/database');
 
 const getAllBooks = async (req, res) => {
   try {
-    console.log('📖 Запрос на получение книг...');
+    console.log('Запрос на получение книг...');
     
     const { genre_id, author_id, search } = req.query;
     let query = `
@@ -53,11 +53,11 @@ const getAllBooks = async (req, res) => {
     console.log('Values:', values);
     
     const result = await pool.query(query, values);
-    console.log(`📚 Найдено книг: ${result.rows.length}`);
+    console.log(`Найдено книг: ${result.rows.length}`);
     
     res.json({ books: result.rows });
   } catch (error) {
-    console.error('❌ Ошибка при получении книг:', error);
+    console.error('Ошибка при получении книг:', error);
     res.status(500).json({ error: 'Ошибка при получении книг' });
   }
 };

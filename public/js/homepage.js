@@ -109,7 +109,7 @@ function buildGenreRow(genreName, books) {
 function bookCard(book) {
     const safeTitle = escapeHtml(book.title || 'Без названия');
     const safeAuthor = escapeHtml(book.author_name || 'Автор не указан');
-    const priceText = (book.price != null) ? `${book.price} ₽` : 'Цена не указана';
+    const priceText = (book.price != null) ? `${book.price} р` : 'Цена не указана';
     const defaultCover = 'https://i.pinimg.com/474x/e2/93/05/e29305e0ee7c3d1ef31ce6f234e194f8.jpg';
     const coverSrc = book.cover_image ? book.cover_image : defaultCover;
     const inStock = Number(book.stock_quantity || 0) > 0;

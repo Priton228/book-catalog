@@ -110,7 +110,7 @@ function displayOrders(orders) {
                 <div class="order-info">
                     <h3>Заказ #${order.id}</h3>
                     <div class="order-date">${new Date(order.created_at).toLocaleDateString('ru-RU')} ${new Date(order.created_at).toLocaleTimeString('ru-RU')}</div>
-                    <div class="order-amount">Сумма: ${order.total_amount} ₽</div>
+                    <div class="order-amount">Сумма: ${order.total_amount} р</div>
                 </div>
                 <div class="order-status order-status-${order.status}">
                     ${getStatusText(order.status)}
@@ -128,7 +128,7 @@ function displayOrders(orders) {
                             </div>
                             <div class="order-item-details">
                                 <div class="order-item-quantity">${item.quantity} шт.</div>
-                                <div class="order-item-price">${item.unit_price} ₽ × ${item.quantity} = ${(item.unit_price * item.quantity).toFixed(2)} ₽</div>
+                                <div class="order-item-price">${item.unit_price} р × ${item.quantity} = ${(item.unit_price * item.quantity).toFixed(2)} р</div>
                             </div>
                         </div>
                     `).join('') : 

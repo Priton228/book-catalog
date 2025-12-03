@@ -33,7 +33,7 @@ function loadCheckoutData() {
     
     if (cart.length === 0) {
         checkoutItems.innerHTML = '<p class="empty-cart">Корзина пуста</p>';
-        checkoutTotal.textContent = '0 ₽';
+        checkoutTotal.textContent = '0 р';
         return;
     }
     
@@ -46,13 +46,13 @@ function loadCheckoutData() {
             </div>
             <div class="checkout-item-details">
                 <div class="checkout-item-quantity">${item.quantity} шт.</div>
-                <div class="checkout-item-price">${item.price} ₽ × ${item.quantity} = ${(item.price * item.quantity).toFixed(2)} ₽</div>
+                <div class="checkout-item-price">${item.price} р × ${item.quantity} = ${(item.price * item.quantity).toFixed(2)} р</div>
             </div>
         </div>
     `).join('');
     
     const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    checkoutTotal.textContent = total.toFixed(2) + ' ₽';
+    checkoutTotal.textContent = total.toFixed(2) + ' р';
     
     console.log('Checkout data loaded');
 }
@@ -166,7 +166,7 @@ function showOrderConfirmation(order, formData) {
             <h3>🎉 Заказ успешно оформлен!</h3>
             <div class="confirmation-details">
                 <p><strong>Номер заказа:</strong> #${order.id}</p>
-                <p><strong>Сумма заказа:</strong> ${order.total_amount} ₽</p>
+                <p><strong>Сумма заказа:</strong> ${order.total_amount} р</p>
                 <p><strong>Статус:</strong> ${getStatusText(order.status)}</p>
                 <p><strong>Получатель:</strong> ${formData.full_name}</p>
                 <p><strong>Телефон:</strong> ${formData.phone}</p>

@@ -5,7 +5,7 @@ const register = async (req, res) => {
   try {
     const { email, password, full_name } = req.body;
 
-    console.log('📝 Регистрация пользователя:', email);
+    console.log('Регистрация пользователя:', email);
 
     // Валидация
     if (!email || !password || !full_name) {
@@ -32,7 +32,7 @@ const register = async (req, res) => {
       { expiresIn: '24h' }
     );
 
-    console.log('✅ Пользователь зарегистрирован:', user.email);
+    console.log('Пользователь зарегистрирован:', user.email);
 
     res.status(201).json({
       message: 'Пользователь успешно зарегистрирован',
@@ -45,7 +45,7 @@ const register = async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('❌ Registration error:', error);
+    console.error('Registration error:', error);
     res.status(500).json({ error: 'Ошибка при регистрации' });
   }
 };
@@ -54,7 +54,7 @@ const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    console.log('🔐 Попытка входа:', email);
+    console.log('Попытка входа:', email);
 
     if (!email || !password) {
       return res.status(400).json({ error: 'Email и пароль обязательны' });
@@ -63,20 +63,20 @@ const login = async (req, res) => {
     // Находим пользователя
     const user = await User.findByEmail(email);
     if (!user) {
-      console.log('❌ Пользователь не найден:', email);
+      console.log('Пользователь не найден:', email);
       return res.status(401).json({ error: 'Неверный email или пароль' });
     }
 
     // Проверяем, не заблокирован ли пользователь
     if (user.blocked) {
-      console.log('❌ Пользователь заблокирован:', email);
+      console.log('Пользователь заблокирован:', email);
       return res.status(401).json({ error: 'Пользователь заблокирован' });
     }
 
     // Проверяем пароль
     const isPasswordValid = await User.comparePassword(password, user.password_hash);
     if (!isPasswordValid) {
-      console.log('❌ Неверный пароль для:', email);
+      console.log('Неверный пароль для:', email);
       return res.status(401).json({ error: 'Неверный email или пароль' });
     }
 
@@ -87,7 +87,7 @@ const login = async (req, res) => {
       { expiresIn: '24h' }
     );
 
-    console.log('✅ Успешный вход:', user.email);
+    console.log('Успешный вход:', user.email);
 
     res.json({
       message: 'Успешный вход',
@@ -100,7 +100,7 @@ const login = async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('❌ Login error:', error);
+    console.error('Login error:', error);
     res.status(500).json({ error: 'Ошибка при входе' });
   }
 };
@@ -129,21 +129,21 @@ const verifyReset = async (req, res) => {
     // Находим пользователя
     const user = await User.findByEmail(email);
     if (!user) {
-      console.log('❌ Пользователь не найден:', email);
+      console.log('Пользователь не найден:', email);
       return res.status(404).json({ error: 'Пользователь с таким email не найден' });
     }
 
     // Проверяем ФИО
     if (user.full_name.trim().toLowerCase() !== full_name.trim().toLowerCase()) {
-      console.log('❌ ФИО не совпадает для:', email);
+      console.log('ФИО не совпадает для:', email);
       return res.status(400).json({ error: 'ФИО не совпадает с указанным при регистрации' });
     }
 
-    console.log('✅ Данные подтверждены для:', email);
+    console.log('Данные подтверждены для:', email);
 
     res.json({ message: 'Данные подтверждены' });
   } catch (error) {
-    console.error('❌ Verify reset error:', error);
+    console.error('Verify reset error:', error);
     res.status(500).json({ error: 'Ошибка при проверке данных' });
   }
 };
@@ -153,7 +153,7 @@ const resetPassword = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    console.log('🔑 Сброс пароля для:', email);
+    console.log('Сброс пароля для:', email);
 
     if (!email || !password) {
       return res.status(400).json({ error: 'Email и пароль обязательны' });
@@ -162,18 +162,18 @@ const resetPassword = async (req, res) => {
     // Находим пользователя
     const user = await User.findByEmail(email);
     if (!user) {
-      console.log('❌ Пользователь не найден:', email);
+      console.log('Пользователь не найден:', email);
       return res.status(404).json({ error: 'Пользователь не найден' });
     }
 
     // Обновляем пароль
     await User.updatePassword(user.id, password);
 
-    console.log('✅ Пароль успешно обновлён для:', email);
+    console.log('Пароль успешно обновлён для:', email);
 
     res.json({ message: 'Пароль успешно изменён' });
   } catch (error) {
-    console.error('❌ Reset password error:', error);
+    console.error('Reset password error:', error);
     res.status(500).json({ error: 'Ошибка при сбросе пароля' });
   }
 };

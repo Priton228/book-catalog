@@ -5,7 +5,7 @@ const createOrder = async (req, res) => {
     const { items, shipping_address, shipping_method, customer_notes } = req.body;
     const user_id = req.user.id;
 
-    console.log('🛒 Создание заказа для пользователя:', user_id, 'Товары:', items);
+    console.log('Создание заказа для пользователя:', user_id, 'Товары:', items);
 
     if (!items || !Array.isArray(items) || items.length === 0) {
       return res.status(400).json({ error: 'Корзина пуста' });
@@ -28,7 +28,7 @@ const createOrder = async (req, res) => {
       customer_notes
     });
 
-    console.log('✅ Заказ создан:', order.id);
+    console.log('Заказ создан:', order.id);
 
     res.status(201).json({
       message: 'Заказ успешно создан',
@@ -40,21 +40,21 @@ const createOrder = async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('❌ Create order error:', error);
+    console.error('Create order error:', error);
     res.status(500).json({ error: error.message || 'Ошибка при создании заказа' });
   }
 };
 
 const getUserOrders = async (req, res) => {
   try {
-    console.log('📦 Запрос заказов пользователя:', req.user.id);
+    console.log('Запрос заказов пользователя:', req.user.id);
     
     const orders = await Order.findByUserId(req.user.id);
-    console.log('📦 Найдено заказов:', orders.length);
+    console.log('Найдено заказов:', orders.length);
     
     res.json({ orders });
   } catch (error) {
-    console.error('❌ Get user orders error:', error);
+    console.error('Get user orders error:', error);
     res.status(500).json({ error: 'Ошибка при получении заказов' });
   }
 };

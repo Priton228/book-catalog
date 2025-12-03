@@ -82,7 +82,7 @@ window.updateCartDisplay = function() {
     
     if (window.cart.length === 0) {
         cartItems.innerHTML = '<p class="empty-cart">Корзина пуста</p>';
-        if (cartTotal) cartTotal.textContent = '0 ₽';
+        if (cartTotal) cartTotal.textContent = '0 р';
         console.log('🛒 Cart is empty');
     } else {
         const defaultCover = 'https://i.pinimg.com/474x/e2/93/05/e29305e0ee7c3d1ef31ce6f234e194f8.jpg';
@@ -92,9 +92,9 @@ window.updateCartDisplay = function() {
                 <div class="cart-item-info">
                     <div class="cart-item-title">${window.escapeHtml(item.title)}</div>
                     <div class="cart-item-author">${window.escapeHtml(item.author)}</div>
-                    <div class="cart-item-price">${item.price} ₽ × ${item.quantity}</div>
+                    <div class="cart-item-price">${item.price} р × ${item.quantity}</div>
                 </div>
-                <div class="cart-item-total">${(item.price * item.quantity).toFixed(2)} ₽</div>
+                <div class="cart-item-total">${(item.price * item.quantity).toFixed(2)} р</div>
                 <div class="cart-item-actions">
                     <button class="btn btn-outline cart-decrease-btn" data-book-id="${item.bookId}">-</button>
                     <span>${item.quantity}</span>
@@ -108,7 +108,7 @@ window.updateCartDisplay = function() {
         addCartItemListeners();
         
         const total = window.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-        if (cartTotal) cartTotal.textContent = total.toFixed(2) + ' ₽';
+        if (cartTotal) cartTotal.textContent = total.toFixed(2) + ' р';
         console.log('Cart total:', total);
     }
 };
