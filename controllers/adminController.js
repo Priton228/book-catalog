@@ -295,20 +295,23 @@ const deleteOrder = async (req, res) => {
 const getStatistics = async (req, res) => {
   try {
     const stats = {};
+    const safe = async (sql, params) => {
+      try { return await pool.query(sql, params); } catch (e) { return { rows: [] }; }
+    };
     
     // Общая статистика
-    const usersCount = await pool.query('SELECT COUNT(*) FROM users');
-    const booksCount = await pool.query('SELECT COUNT(*) FROM books WHERE is_active = true');
-    const ordersCount = await pool.query('SELECT COUNT(*) FROM orders');
-    const totalRevenue = await pool.query('SELECT COALESCE(SUM(total_amount), 0) FROM orders WHERE status != \'cancelled\'');
+    const usersCount = await safe('SELECT COUNT(*) FROM users');
+    const booksCount = await safe('SELECT COUNT(*) FROM books WHERE is_active = true');
+    const ordersCount = await safe('SELECT COUNT(*) FROM orders');
+    const totalRevenue = await safe('SELECT COALESCE(SUM(total_amount), 0) FROM orders WHERE status != \'cancelled\'');
     
-    stats.users = parseInt(usersCount.rows[0].count);
-    stats.books = parseInt(booksCount.rows[0].count);
-    stats.orders = parseInt(ordersCount.rows[0].count);
-    stats.totalRevenue = parseFloat(totalRevenue.rows[0].coalesce);
+    stats.users = parseInt((usersCount.rows && usersCount.rows[0] && usersCount.rows[0].count) || 0);
+    stats.books = parseInt((booksCount.rows && booksCount.rows[0] && booksCount.rows[0].count) || 0);
+    stats.orders = parseInt((ordersCount.rows && ordersCount.rows[0] && ordersCount.rows[0].count) || 0);
+    stats.totalRevenue = parseFloat((totalRevenue.rows && totalRevenue.rows[0] && (totalRevenue.rows[0].coalesce || totalRevenue.rows[0].sum || 0)) || 0);
     
     // Статистика по заказам за последние 30 дней
-    const ordersByDay = await pool.query(`
+    const ordersByDay = await safe(`
       SELECT DATE(created_at) as date, COUNT(*) as count, SUM(total_amount) as revenue
       FROM orders 
       WHERE created_at >= NOW() - INTERVAL '30 days'
@@ -319,7 +322,7 @@ const getStatistics = async (req, res) => {
     stats.ordersByDay = ordersByDay.rows;
     
     // Топ-5 популярных книг
-    const popularBooks = await pool.query(`
+    const popularBooks = await safe(`
       SELECT 
         b.title,
         a.name as author_name,
@@ -335,7 +338,7 @@ const getStatistics = async (req, res) => {
     stats.popularBooks = popularBooks.rows;
 
     // Распределение заказов по статусам
-    const ordersByStatus = await pool.query(`
+    const ordersByStatus = await safe(`
       SELECT status, COUNT(*)::int as count
       FROM orders
       GROUP BY status
@@ -343,7 +346,7 @@ const getStatistics = async (req, res) => {
     stats.ordersByStatus = ordersByStatus.rows;
 
     // Выручка по жанрам (топ-8)
-    const revenueByGenre = await pool.query(`
+    const revenueByGenre = await safe(`
       SELECT 
         g.name as genre_name,
         COALESCE(SUM(oi.quantity * oi.unit_price), 0)::float as revenue
@@ -357,7 +360,7 @@ const getStatistics = async (req, res) => {
     stats.revenueByGenre = revenueByGenre.rows;
 
     // Топ авторы по количеству проданных экземпляров (топ-8)
-    const topAuthors = await pool.query(`
+    const topAuthors = await safe(`
       SELECT 
         a.name as author_name,
         COALESCE(SUM(oi.quantity), 0)::int as total_sold
@@ -371,41 +374,54 @@ const getStatistics = async (req, res) => {
     stats.topAuthors = topAuthors.rows;
 
     // Средний и медианный чек (исключая отмененные)
-    const avgOrder = await pool.query(`
+    const avgOrder = await safe(`
       SELECT AVG(total_amount)::float as avg_value FROM orders WHERE status != 'cancelled'
     `);
-    const medianOrder = await pool.query(`
+    const medianOrder = await safe(`
       SELECT percentile_disc(0.5) WITHIN GROUP (ORDER BY total_amount)::float as median_value
       FROM orders WHERE status != 'cancelled'
     `);
-    stats.avgOrderValue = parseFloat(avgOrder.rows[0].avg_value || 0);
-    stats.medianOrderValue = parseFloat(medianOrder.rows[0].median_value || 0);
+    stats.avgOrderValue = parseFloat((avgOrder.rows && avgOrder.rows[0] && avgOrder.rows[0].avg_value) || 0);
+    stats.medianOrderValue = parseFloat((medianOrder.rows && medianOrder.rows[0] && medianOrder.rows[0].median_value) || 0);
 
     // Возвращающиеся клиенты
-    const returning = await pool.query(`
+    const returning = await safe(`
       SELECT COUNT(*)::int AS count FROM (
         SELECT user_id FROM orders GROUP BY user_id HAVING COUNT(*) > 1
       ) t
     `);
-    const customersWithOrders = await pool.query(`
+    const customersWithOrders = await safe(`
       SELECT COUNT(DISTINCT user_id)::int AS count FROM orders
     `);
-    const ret = returning.rows[0].count || 0;
-    const cust = customersWithOrders.rows[0].count || 0;
+    const ret = (returning.rows && returning.rows[0] && returning.rows[0].count) || 0;
+    const cust = (customersWithOrders.rows && customersWithOrders.rows[0] && customersWithOrders.rows[0].count) || 0;
     stats.returningCustomers = ret;
     stats.returningRate = cust > 0 ? Math.round((ret / cust) * 100) : 0;
 
     // Новые пользователи за 30 дней
-    const newUsers30d = await pool.query(`
+    const newUsers30d = await safe(`
       SELECT COUNT(*)::int AS count FROM users WHERE created_at >= NOW() - INTERVAL '30 days'
     `);
-    stats.newUsers30d = newUsers30d.rows[0].count || 0;
+    stats.newUsers30d = (newUsers30d.rows && newUsers30d.rows[0] && newUsers30d.rows[0].count) || 0;
 
     // Низкие остатки на складе (меньше 5)
-    const lowStock = await pool.query(`
+    const lowStock = await safe(`
       SELECT COUNT(*)::int AS count FROM books WHERE stock_quantity < 5 AND is_active = true
     `);
-    stats.lowStockCount = lowStock.rows[0].count || 0;
+    stats.lowStockCount = (lowStock.rows && lowStock.rows[0] && lowStock.rows[0].count) || 0;
+
+    // Заказы по неделям (12 недель)
+    const ordersByWeek = await safe(`
+      SELECT 
+        to_char(date_trunc('week', created_at), 'YYYY-MM-DD') as week_start,
+        COUNT(*)::int as count,
+        COALESCE(SUM(total_amount),0)::float as revenue
+      FROM orders
+      WHERE created_at >= NOW() - INTERVAL '12 weeks'
+      GROUP BY week_start
+      ORDER BY week_start DESC
+    `);
+    stats.ordersByWeek = ordersByWeek.rows;
 
     res.json(stats);
   } catch (error) {
