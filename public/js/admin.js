@@ -402,15 +402,15 @@ async function loadDashboard() {
                 <div class="stat-card"><div class="stat-number">${stats.orders || 0}</div><div class="stat-label">Заказы</div></div>
                 <div class="stat-card"><div class="stat-number">${totalRevenue} ₽</div><div class="stat-label">Выручка</div></div>
                 ${Number(avgOrder)>0 ? `<div class="stat-card"><div class="stat-number">${avgOrder} ₽</div><div class="stat-label">Средний чек</div></div>` : ''}
-                ${topGenre ? `<div class="stat-card"><div class="stat-number" style="max-width:220px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${topGenre}</div><div class="stat-label">Топ жанр</div></div>` : ''}
-                ${topAuthor ? `<div class="stat-card"><div class="stat-number" style="max-width:220px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${topAuthor}</div><div class="stat-label">Топ автор</div></div>` : ''}
-                ${topBookTitle ? `<div class="stat-card"><div class="stat-number" style="max-width:220px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${topBookTitle}</div><div class="stat-label">Топ книга</div></div>` : ''}
+                ${topGenre ? `<div class="stat-card"><div class="stat-number" style="font-size:1.1em; white-space:normal; overflow:visible; text-overflow:clip; word-break:break-word;">${topGenre}</div><div class="stat-label">Топ жанр</div></div>` : ''}
+                ${topAuthor ? `<div class="stat-card"><div class="stat-number" style="font-size:1.1em; white-space:normal; overflow:visible; text-overflow:clip; word-break:break-word;">${topAuthor}</div><div class="stat-label">Топ автор</div></div>` : ''}
+                ${topBookTitle ? `<div class="stat-card"><div class="stat-number" style="font-size:1.1em; white-space:normal; overflow:visible; text-overflow:clip; word-break:break-word;">${topBookTitle}</div><div class="stat-label">Топ книга</div></div>` : ''}
             </div>
 
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 20px; grid-column: 1 / -1; margin-top: 20px;">
                 <div style="background:#fff; padding: 20px; border-radius:12px; box-shadow:0 6px 18px rgba(0,0,0,0.08);">
-                    <h3 style="margin-bottom:10px; color:#2c3e50;">Заказы по неделям (12 недель)</h3>
-                    <canvas id="chart-orders-week" style="width:100%; height:280px;"></canvas>
+                    <h3 style="margin-bottom:10px; color:#2c3e50;">Тренд заказов за 30 дней</h3>
+                    <canvas id="chart-orders-trend" style="width:100%; height:280px;"></canvas>
                 </div>
                 <div style="background:#fff; padding: 20px; border-radius:12px; box-shadow:0 6px 18px rgba(0,0,0,0.08);">
                     <h3 style="margin-bottom:10px; color:#2c3e50;">Выручка по дням (30 дней)</h3>
@@ -420,7 +420,7 @@ async function loadDashboard() {
 
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 20px; grid-column: 1 / -1; margin-top: 20px;">
                 <div style="background:#fff; padding: 20px; border-radius:12px; box-shadow:0 6px 18px rgba(0,0,0,0.08);">
-                    <h3 style="margin-bottom:10px; color:#2c3e50;">Статусы заказов (круговая)</h3>
+                    <h3 style="margin-bottom:10px; color:#2c3e50;">Статусы заказов</h3>
                     <canvas id="chart-status" style="width:100%; height:300px;"></canvas>
                 </div>
                 <div style="background:#fff; padding: 20px; border-radius:12px; box-shadow:0 6px 18px rgba(0,0,0,0.08);">
@@ -429,16 +429,14 @@ async function loadDashboard() {
                 </div>
             </div>
         `;
-        const ordersByWeek = Array.isArray(stats.ordersByWeek) ? stats.ordersByWeek.slice().reverse() : [];
-        const labelsWeeks = ordersByWeek.map(x => new Date(x.week_start).toLocaleDateString('ru-RU'));
-        const countsWeeks = ordersByWeek.map(x => Number(x.count || 0));
         const ordersByDayArr = Array.isArray(stats.ordersByDay) ? stats.ordersByDay.slice().reverse() : [];
         const labelsDays = ordersByDayArr.map(x => new Date(x.date).toLocaleDateString('ru-RU'));
+        const countsDays = ordersByDayArr.map(x => Number(x.count || 0));
         const revenueDays = ordersByDayArr.map(x => Number(x.revenue || 0));
         const topBooks = Array.isArray(stats.popularBooks) ? stats.popularBooks : [];
         const labelsBooks = topBooks.map(x => (x.title || '').slice(0,24));
         const valuesBooks = topBooks.map(x => Number(x.total_sold || 0));
-        drawLine(document.getElementById('chart-orders-week'), labelsWeeks, countsWeeks, { color: '#3498db' });
+        drawLine(document.getElementById('chart-orders-trend'), labelsDays, countsDays, { color: '#3498db' });
         drawBars(document.getElementById('chart-revenue'), labelsDays, revenueDays, { color: '#27ae60' });
         const statusData = Array.isArray(stats.ordersByStatus) ? stats.ordersByStatus : [];
         const statusLabels = statusData.map(s => getOrderStatusText(s.status));
@@ -519,8 +517,8 @@ function renderDashboard(stats) {
 
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 20px; grid-column: 1 / -1; margin-top: 20px;">
             <div style="background:#fff; padding: 20px; border-radius:12px; box-shadow:0 6px 18px rgba(0,0,0,0.08);">
-                <h3 style="margin-bottom:10px; color:#2c3e50;">Заказы по неделям (12 недель)</h3>
-                <canvas id="chart-orders-week" style="width:100%; height:280px;"></canvas>
+                <h3 style="margin-bottom:10px; color:#2c3e50;">Тренд заказов за 30 дней</h3>
+                <canvas id="chart-orders-trend" style="width:100%; height:280px;"></canvas>
             </div>
             <div style="background:#fff; padding: 20px; border-radius:12px; box-shadow:0 6px 18px rgba(0,0,0,0.08);">
                 <h3 style="margin-bottom:10px; color:#2c3e50;">Выручка по дням (30 дней)</h3>
@@ -540,10 +538,9 @@ function renderDashboard(stats) {
         </div>
     `;
 
-    const ordersByWeek = stats.ordersByDay.slice().reverse().reduce((acc, d)=>{ acc.push(d); return acc; }, []).slice(-12);
-    const labelsWeeks = ordersByWeek.map(x => new Date(x.date).toLocaleDateString('ru-RU'));
-    const countsWeeks = ordersByWeek.map(x => Number(x.count||0));
-    const labelsDays = stats.ordersByDay.map(x => new Date(x.date).toLocaleDateString('ru-RU'));
+    const ordersByDayTrend = stats.ordersByDay.slice().reverse().slice(-30);
+    const labelsDays = ordersByDayTrend.map(x => new Date(x.date).toLocaleDateString('ru-RU'));
+    const countsDays = ordersByDayTrend.map(x => Number(x.count||0));
     const revenueDays = stats.ordersByDay.map(x => Number(x.revenue||0));
     const statusData = Array.isArray(stats.ordersByStatus)?stats.ordersByStatus:[];
     const statusLabels = statusData.map(s=>getOrderStatusText(s.status));
@@ -558,7 +555,7 @@ function renderDashboard(stats) {
             default: return '#34495e';
         }
     });
-    drawLine(document.getElementById('chart-orders-week'), labelsWeeks, countsWeeks, { color: '#3498db' });
+    drawLine(document.getElementById('chart-orders-trend'), labelsDays, countsDays, { color: '#3498db' });
     drawBars(document.getElementById('chart-revenue'), labelsDays, revenueDays, { color: '#27ae60' });
     drawDonut(document.getElementById('chart-status'), statusLabels, statusValues, { colors: statusColors });
     drawHorizontalBars(document.getElementById('chart-top-books'), [], [], { color: '#9b59b6' });
@@ -652,18 +649,7 @@ function drawDonut(canvas, labels, values, opts) {
     ctx.arc(cx,cy,ir,0,Math.PI*2);
     ctx.fill();
     ctx.globalCompositeOperation = 'source-over';
-    // Legend
-    ctx.font = '12px Arial';
-    ctx.textAlign = 'left';
-    let lx = 10, ly = 10;
-    for (let i=0;i<labels.length;i++) {
-        ctx.fillStyle = colors[i % colors.length];
-        ctx.fillRect(lx, ly, 12, 12);
-        ctx.fillStyle = '#333';
-        const pct = Math.round((values[i]/sum)*100);
-        ctx.fillText(`${labels[i]} — ${values[i]} (${pct}%)`, lx+16, ly+11);
-        ly += 16;
-    }
+    
 }
 
 function drawHorizontalBars(canvas, labels, values, opts) {
