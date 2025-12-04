@@ -133,7 +133,20 @@ function startAutoplay(totalSlides) {
     let currentIndex = 0;
     const totalSlidesWithDuplicate = totalSlides + (totalSlides > 1 ? 1 : 0);
     
-    promoInterval = setInterval(() => {
+    // Set up hover pause functionality
+    const carousel = document.getElementById('promo-carousel');
+    if (carousel) {
+        carousel.addEventListener('mouseenter', () => {
+            clearInterval(promoInterval);
+        });
+        
+        carousel.addEventListener('mouseleave', () => {
+            // Restart the interval
+            promoInterval = setInterval(autoplayFunction, 5000);
+        });
+    }
+    
+    const autoplayFunction = () => {
         const slidesContainer = document.getElementById('promo-slides');
         if (!slidesContainer) return;
         
@@ -157,7 +170,9 @@ function startAutoplay(totalSlides) {
                 }, 50);
             }, 800);
         }
-    }, 5000); // Change slide every 5 seconds
+    };
+    
+    promoInterval = setInterval(autoplayFunction, 5000); // Change slide every 5 seconds
 }
 
 function formatPromotionDates(startDate, endDate) {

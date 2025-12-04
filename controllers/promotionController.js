@@ -29,7 +29,7 @@ async function ensurePromotionsTable() {
 const getAllPromotions = async (req, res) => {
   try {
     await ensurePromotionsTable();
-    const result = await pool.query('SELECT * FROM promotions ORDER BY created_at DESC');
+    const result = await pool.query('SELECT * FROM promotions ORDER BY id ASC');
     res.json(result.rows);
   } catch (e) {
     res.status(500).json({ error: 'Ошибка получения акций', message: e.message });

@@ -276,6 +276,7 @@ function attachSortHandlers(container, section) {
                         case 'orders': ordersSort = { field, direction }; break;
                         case 'authors': authorsSort = { field, direction }; break;
                         case 'genres': genresSort = { field, direction }; break;
+                        case 'promotions': promotionsSort = { field, direction }; break;
                     }
                     // Перерисовать секцию
                     switch (section) {
@@ -284,6 +285,7 @@ function attachSortHandlers(container, section) {
                         case 'orders': displayOrders(ordersData); break;
                         case 'authors': displayAuthors(authorsData); break;
                         case 'genres': displayGenres(genresData); break;
+                        case 'promotions': loadPromotions(); break;
                     }
                 });
             });
@@ -1945,6 +1947,8 @@ function updateAuthorSelects(authors) {
     });
 }
 
+let promotionsSort = { field: 'id', direction: 'asc' };
+
 async function loadPromotions() {
     try {
         const token = localStorage.getItem('authToken');
@@ -1955,11 +1959,44 @@ async function loadPromotions() {
             container.innerHTML = '<div class="error">Ошибка загрузки акций</div>';
             return;
         }
-        const promos = await resp.json();
+        let promos = await resp.json();
         if (!Array.isArray(promos) || promos.length === 0) {
             container.innerHTML = '<p>Нет акций</p>';
             return;
         }
+        
+        // Apply sorting
+        promos.sort((a, b) => {
+            let aValue, bValue;
+            
+            switch (promotionsSort.field) {
+                case 'id':
+                    aValue = a.id;
+                    bValue = b.id;
+                    break;
+                case 'name':
+                    aValue = a.name.toLowerCase();
+                    bValue = b.name.toLowerCase();
+                    break;
+                case 'start_date':
+                    aValue = new Date(a.start_date);
+                    bValue = new Date(b.start_date);
+                    break;
+                default:
+                    aValue = a.id;
+                    bValue = b.id;
+            }
+            
+            if (promotionsSort.direction === 'desc') {
+                // Swap values for descending sort
+                [aValue, bValue] = [bValue, aValue];
+            }
+            
+            if (aValue < bValue) return -1;
+            if (aValue > bValue) return 1;
+            return 0;
+        });
+        
         const now = new Date();
         const rows = promos.map(p => {
             const active = Boolean(p.is_active) && (p.start_date ? new Date(p.start_date) <= now : true) && (p.end_date ? new Date(p.end_date) >= now : true);
@@ -1977,22 +2014,46 @@ async function loadPromotions() {
                 </td>
             </tr>
         `}).join('');
+        
         container.innerHTML = `
             <table class="admin-table">
                 <thead>
                     <tr>
-                        <th>ID</th>
-                        <th>Название</th>
-                        <th>Скидка</th>
-                        <th>Начало</th>
-                        <th>Окончание</th>
-                        <th>Статус</th>
-                        <th>Действия</th>
+                        <th><div class="th-inner"><span class="th-label">ID</span>
+                            <span class="sort-caret" data-section="promotions" data-field="id">▾</span>
+                            <div class="sort-menu">
+                                <button data-sort="asc">По возрастанию</button>
+                                <button data-sort="desc">По убыванию</button>
+                                <button data-sort="none">Сброс</button>
+                            </div>
+                        </div></th>
+                        <th><div class="th-inner"><span class="th-label">Название</span>
+                            <span class="sort-caret" data-section="promotions" data-field="name">▾</span>
+                            <div class="sort-menu">
+                                <button data-sort="asc">Алфавит A→Я</button>
+                                <button data-sort="desc">Алфавит Я→А</button>
+                                <button data-sort="none">Сброс</button>
+                            </div>
+                        </div></th>
+                        <th><div class="th-inner"><span class="th-label">Скидка</span></div></th>
+                        <th><div class="th-inner"><span class="th-label">Начало</span>
+                            <span class="sort-caret" data-section="promotions" data-field="start_date">▾</span>
+                            <div class="sort-menu">
+                                <button data-sort="asc">По возрастанию</button>
+                                <button data-sort="desc">По убыванию</button>
+                                <button data-sort="none">Сброс</button>
+                            </div>
+                        </div></th>
+                        <th><div class="th-inner"><span class="th-label">Окончание</span></div></th>
+                        <th><div class="th-inner"><span class="th-label">Статус</span></div></th>
+                        <th><div class="th-inner"><span class="th-label">Действия</span></div></th>
                     </tr>
                 </thead>
                 <tbody>${rows}</tbody>
             </table>
         `;
+        
+        attachSortHandlers(container, 'promotions');
     } catch (e) {
         const container = document.getElementById('promotions-table-container');
         if (container) container.innerHTML = '<div class="error">Ошибка загрузки акций</div>';
