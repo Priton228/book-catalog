@@ -315,6 +315,8 @@ function attachSortHandlers(container, section) {
                     if (e.target.checked) ordersFilters.statuses.add(val); else ordersFilters.statuses.delete(val);
                 });
             });
+            
+            // No filter handlers needed as we removed the filter functionality
 
             // Кнопка «Применить» внутри меню
             const applyBtn = menu.querySelector('.filter-apply');
@@ -325,6 +327,7 @@ function attachSortHandlers(container, section) {
                         case 'users': displayUsers(usersData); break;
                         case 'books': displayBooks(booksData); break;
                         case 'orders': displayOrders(ordersData); break;
+                        case 'promotions': loadPromotions(); break;
                     }
                     // Закрыть меню после применения
                     menu.style.display = 'none';
@@ -1948,6 +1951,12 @@ function updateAuthorSelects(authors) {
 }
 
 let promotionsSort = { field: 'id', direction: 'asc' };
+let promotionsFilters = { discounts: new Set() };
+
+// Initialize promotions filters
+function initPromotionsFilters() {
+    promotionsFilters = { discounts: new Set() };
+}
 
 async function loadPromotions() {
     try {
@@ -1965,6 +1974,8 @@ async function loadPromotions() {
             return;
         }
         
+        // No discount filter needed as we removed the filter functionality
+        
         // Apply sorting
         promos.sort((a, b) => {
             let aValue, bValue;
@@ -1981,6 +1992,10 @@ async function loadPromotions() {
                 case 'start_date':
                     aValue = new Date(a.start_date);
                     bValue = new Date(b.start_date);
+                    break;
+                case 'discount_value':
+                    aValue = a.discount_value;
+                    bValue = b.discount_value;
                     break;
                 default:
                     aValue = a.id;
@@ -2015,6 +2030,11 @@ async function loadPromotions() {
             </tr>
         `}).join('');
         
+        // Get unique discount values for filtering
+        const discountValues = Array.from(new Set(promos.map(p => 
+            p.discount_type === 'percent' ? p.discount_value + '%' : p.discount_value + ' р'
+        ))).sort();
+        
         container.innerHTML = `
             <table class="admin-table">
                 <thead>
@@ -2035,7 +2055,14 @@ async function loadPromotions() {
                                 <button data-sort="none">Сброс</button>
                             </div>
                         </div></th>
-                        <th><div class="th-inner"><span class="th-label">Скидка</span></div></th>
+                        <th><div class="th-inner"><span class="th-label">Скидка</span>
+                            <span class="sort-caret" data-section="promotions" data-field="discount_value">▾</span>
+                            <div class="sort-menu">
+                                <button data-sort="asc">По возрастанию</button>
+                                <button data-sort="desc">По убыванию</button>
+                                <button data-sort="none">Сброс</button>
+                            </div>
+                        </div></th>
                         <th><div class="th-inner"><span class="th-label">Начало</span>
                             <span class="sort-caret" data-section="promotions" data-field="start_date">▾</span>
                             <div class="sort-menu">

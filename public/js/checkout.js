@@ -1,8 +1,8 @@
 ﻿﻿﻿﻿﻿﻿﻿﻿﻿// Страница оформления заказа
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
     console.log('Checkout page loaded');
     initializeCheckoutEventListeners();
-    loadCheckoutData();
+    await loadCheckoutData();
     prefillUserData();
 });
 
@@ -26,7 +26,7 @@ function initializeCheckoutEventListeners() {
 }
 
 // Загрузка данных корзины на страницу оформления
-function loadCheckoutData() {
+async function loadCheckoutData() {
     const cart = JSON.parse(localStorage.getItem('cart')) || [];
     const checkoutItems = document.getElementById('checkout-items');
     const checkoutTotal = document.getElementById('checkout-total-amount');
@@ -52,7 +52,28 @@ function loadCheckoutData() {
     `).join('');
     
     const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    checkoutTotal.textContent = total.toFixed(2) + ' р';
+    
+    // Calculate applicable promotions
+    const promotionInfo = await calculateApplicablePromotion(cart, total);
+    
+    if (promotionInfo && promotionInfo.discount > 0) {
+        const discountedTotal = total - promotionInfo.discount;
+        checkoutTotal.innerHTML = `
+            <div>
+                <div style="text-align: right;">
+                    Итого: <span style="text-decoration: line-through;">${total.toFixed(2)} р</span> <span style="color: red;">${discountedTotal.toFixed(2)} р</span>
+                </div>
+                <div style="font-size: 0.9em; color: black; margin-top: 5px; text-align: left;">
+                    Акция: ${promotionInfo.name} (${promotionInfo.discountType === 'percent' ? promotionInfo.value + '%' : promotionInfo.value + ' р'})
+                </div>
+                <div style="font-size: 0.9em; color: black; text-align: left;">
+                    Скидка: ${promotionInfo.discount.toFixed(2)} р
+                </div>
+            </div>
+        `;
+    } else {
+        checkoutTotal.textContent = total.toFixed(2) + ' р';
+    }
     
     console.log('Checkout data loaded');
 }
@@ -216,4 +237,67 @@ function getStatusText(status) {
         'cancelled': 'Отменен'
     };
     return statuses[status] || status;
+}
+
+// Calculate applicable promotion for the cart
+async function calculateApplicablePromotion(cart, totalAmount) {
+    try {
+        // Get book IDs and quantities for checking conditions
+        const bookIds = cart.map(item => parseInt(item.bookId));
+        const quantities = cart.map(item => parseInt(item.quantity) || 0);
+        const totalItems = quantities.reduce((sum, qty) => sum + qty, 0);
+        
+        // Fetch active promotions
+        const response = await fetch('/api/books/promotions');
+        if (!response.ok) return null;
+        
+        const promotions = await response.json();
+        if (!Array.isArray(promotions) || promotions.length === 0) return null;
+        
+        // For simplicity, we'll just return the first applicable promotion with the highest discount
+        // In a real implementation, you would check all conditions properly
+        
+        let bestPromotion = null;
+        let bestDiscount = 0;
+        
+        for (const promo of promotions) {
+            // Check basic conditions
+            const conditions = promo.conditions || {};
+            
+            // Check minimum total amount
+            if (conditions.min_total_amount && totalAmount < conditions.min_total_amount) {
+                continue;
+            }
+            
+            // Check minimum items
+            if (conditions.min_items && totalItems < conditions.min_items) {
+                continue;
+            }
+            
+            // Calculate discount
+            let discount = 0;
+            if (promo.discount_type === 'percent') {
+                discount = (totalAmount * promo.discount_value / 100);
+            } else {
+                discount = Math.min(promo.discount_value, totalAmount);
+            }
+            
+            // Check if this is the best promotion so far
+            if (discount > bestDiscount) {
+                bestDiscount = discount;
+                bestPromotion = {
+                    id: promo.id,
+                    name: promo.name,
+                    discountType: promo.discount_type,
+                    value: promo.discount_value,
+                    discount: discount
+                };
+            }
+        }
+        
+        return bestPromotion;
+    } catch (error) {
+        console.error('Error calculating promotion:', error);
+        return null;
+    }
 }

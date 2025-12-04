@@ -80,6 +80,48 @@ function renderPromotionsCarousel(promotions, container) {
     });
     
     carousel.appendChild(slidesContainer);
+    
+    // Create navigation dots
+    if (promotions.length > 1) {
+        const dotsContainer = document.createElement('div');
+        dotsContainer.id = 'promo-dots';
+        dotsContainer.style.cssText = `
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            z-index: 10;
+        `;
+        
+        promotions.forEach((_, index) => {
+            const dot = document.createElement('span');
+            dot.className = 'promo-dot';
+            dot.dataset.index = index;
+            dot.style.cssText = `
+                width: 12px;
+                height: 12px;
+                border-radius: 50%;
+                background-color: rgba(255, 255, 255, 0.5);
+                cursor: pointer;
+                transition: background-color 0.3s ease;
+            `;
+            
+            // Add click event to navigate to specific slide
+            dot.addEventListener('click', () => {
+                goToSlide(index, promotions.length);
+            });
+            
+            dotsContainer.appendChild(dot);
+        });
+        
+        carousel.appendChild(dotsContainer);
+        
+        // Set first dot as active
+        updateDots(0);
+    }
+    
     container.appendChild(carousel);
     
     // Start autoplay if more than one promotion
@@ -158,12 +200,17 @@ function startAutoplay(totalSlides) {
         // Apply the transformation
         slidesContainer.style.transform = `translateX(-${currentIndex * 100}%)`;
         
+        // Update dots (account for duplicate slide)
+        const displayIndex = currentIndex >= totalSlides ? 0 : currentIndex;
+        updateDots(displayIndex);
+        
         // Reset to first slide without transition for seamless loop
         if (totalSlides > 1 && currentIndex === totalSlides) {
             setTimeout(() => {
                 slidesContainer.style.transition = 'none';
                 slidesContainer.style.transform = 'translateX(0%)';
                 currentIndex = 0;
+                updateDots(0);
                 // Restore transition after reset
                 setTimeout(() => {
                     slidesContainer.style.transition = 'transform 0.8s ease-in-out';
@@ -195,6 +242,36 @@ function formatPromotionDates(startDate, endDate) {
     }
     
     return `Начало: ${startStr}`;
+}
+
+// Function to navigate to a specific slide
+function goToSlide(slideIndex, totalSlides) {
+    const slidesContainer = document.getElementById('promo-slides');
+    if (!slidesContainer) return;
+    
+    // Apply the transformation
+    slidesContainer.style.transform = `translateX(-${slideIndex * 100}%)`;
+    
+    // Update dots
+    updateDots(slideIndex);
+    
+    // Reset autoplay
+    if (promoInterval) {
+        clearInterval(promoInterval);
+        startAutoplay(totalSlides);
+    }
+}
+
+// Function to update active dot
+function updateDots(activeIndex) {
+    const dots = document.querySelectorAll('.promo-dot');
+    dots.forEach((dot, index) => {
+        if (index === activeIndex) {
+            dot.style.backgroundColor = 'white';
+        } else {
+            dot.style.backgroundColor = 'rgba(255, 255, 255, 0.5)';
+        }
+    });
 }
 
 function escapeHtml(unsafe) {
