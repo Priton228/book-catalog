@@ -89,7 +89,7 @@ const getActivePromotions = async (req, res) => {
   try {
     const now = new Date();
     const result = await pool.query(
-      `SELECT id, name, discount_type, discount_value, image_url, start_date, end_date 
+      `SELECT id, name, discount_type, discount_value, image_url, start_date, end_date, conditions
        FROM promotions 
        WHERE is_active = true 
          AND start_date <= $1 

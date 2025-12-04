@@ -61,18 +61,18 @@ async function loadCheckoutData() {
         checkoutTotal.innerHTML = `
             <div>
                 <div style="text-align: right;">
-                    Итого: <span style="text-decoration: line-through;">${total.toFixed(2)} р</span> <span style="color: red;">${discountedTotal.toFixed(2)} р</span>
+                    <span style="text-decoration: line-through;">${total.toFixed(2)} р</span> <span style="color: red;">${discountedTotal.toFixed(2)} р</span>
                 </div>
-                <div style="font-size: 0.9em; color: black; margin-top: 5px; text-align: left;">
+                <div style="font-size: 0.9em; color: #888; margin-top: 5px; text-align: left;">
                     Акция: ${promotionInfo.name} (${promotionInfo.discountType === 'percent' ? promotionInfo.value + '%' : promotionInfo.value + ' р'})
                 </div>
-                <div style="font-size: 0.9em; color: black; text-align: left;">
+                <div style="font-size: 0.9em; color: #888; text-align: left;">
                     Скидка: ${promotionInfo.discount.toFixed(2)} р
                 </div>
             </div>
         `;
     } else {
-        checkoutTotal.textContent = total.toFixed(2) + ' р';
+        checkoutTotal.innerHTML = `<div style="text-align: right;">${total.toFixed(2)} р</div>`;
     }
     
     console.log('Checkout data loaded');

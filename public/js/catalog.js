@@ -194,7 +194,7 @@ function displayBooks(books) {
         `;
         
         return `
-        <div class="book-card" data-book-id="${book.id}">
+        <div class="book-card" data-book-id="${book.id}" style="position: relative;">
             ${coverHtml}
             <div class="book-title">${safeTitle}</div>
             <div class="book-author">${safeAuthor}</div>
@@ -206,6 +206,32 @@ function displayBooks(books) {
                     <span class="desc-short">${safeShortDesc}</span>
                     <span class="desc-full" style="display:none;">${safeFullDesc}</span>
                     ${book.description.length > 80 ? `<button class="btn btn-link toggle-description" data-book-id="${book.id}">Показать полностью</button>` : ''}
+                </div>
+            ` : ''}
+            ${book.stock_quantity <= 0 ? `
+                <div style="
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background-color: rgba(200, 200, 200, 0.7);
+                    display: flex;
+                    justify-content: center;
+                    align-items: flex-end;
+                    border-radius: 6px;
+                    z-index: 10;
+                ">
+                    <div style="
+                        background-color: white;
+                        padding: 8px 16px;
+                        border-radius: 4px;
+                        font-weight: bold;
+                        margin-bottom: 20px;
+                        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+                    ">
+                        Нет в наличии
+                    </div>
                 </div>
             ` : ''}
             <div class="book-actions">

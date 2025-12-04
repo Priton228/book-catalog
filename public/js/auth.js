@@ -156,6 +156,11 @@ async function handleLogin(e) {
             closeModals();
             updateAuthUI();
             
+            // Refresh homepage recommendations
+            if (typeof buildHomepageRecommendations === 'function') {
+                buildHomepageRecommendations();
+            }
+            
             // Проверить, заблокирован ли пользователь
             if (currentUser.blocked) {
                 showMessage('Ваш аккаунт заблокирован. Обратитесь к администратору.', 'error');
@@ -230,6 +235,12 @@ function logout() {
     localStorage.removeItem('currentUser');
     localStorage.removeItem('cart');
     updateAuthUI();
+    
+    // Refresh homepage recommendations
+    if (typeof buildHomepageRecommendations === 'function') {
+        buildHomepageRecommendations();
+    }
+    
     showMessage('Вы вышли из системы', 'info');
     window.location.href = '/';
 }

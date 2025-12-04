@@ -40,7 +40,7 @@ async function loadPromotionsCarousel() {
     }
 }
 
-function renderPromotionsCarousel(promotions, container) {
+async function renderPromotionsCarousel(promotions, container) {
     // Clear container
     container.innerHTML = '';
     
@@ -73,11 +73,11 @@ function renderPromotionsCarousel(promotions, container) {
         allPromotions.push(promotions[0]);
     }
     
-    // Create slides
-    allPromotions.forEach((promo, index) => {
-        const slide = createPromotionSlide(promo, index === 0);
-        slidesContainer.appendChild(slide);
-    });
+    // Create slides asynchronously
+    const slidePromises = allPromotions.map((promo, index) => createPromotionSlide(promo, index === 0));
+    const slides = await Promise.all(slidePromises);
+    
+    slides.forEach(slide => slidesContainer.appendChild(slide));
     
     carousel.appendChild(slidesContainer);
     
@@ -130,7 +130,7 @@ function renderPromotionsCarousel(promotions, container) {
     }
 }
 
-function createPromotionSlide(promo, isActive) {
+async function createPromotionSlide(promo, isActive) {
     const slide = document.createElement('div');
     slide.className = 'promo-slide';
     slide.dataset.index = currentPromoIndex++;
@@ -158,9 +158,50 @@ function createPromotionSlide(promo, isActive) {
         ? `${promo.discount_value}% скидка` 
         : `Скидка ${promo.discount_value} руб.`;
     
+    // Get genre and author information
+    let conditionsText = '';
+    if (promo.conditions) {
+        const conditions = typeof promo.conditions === 'string' ? JSON.parse(promo.conditions) : promo.conditions;
+        
+        if (conditions.include_genres && conditions.include_genres.length > 0) {
+            try {
+                const response = await fetch('/api/genres');
+                if (response.ok) {
+                    const genres = await response.json();
+                    const genreNames = genres
+                        .filter(g => conditions.include_genres.includes(g.id))
+                        .map(g => g.name);
+                    if (genreNames.length > 0) {
+                        conditionsText += `Жанры: ${genreNames.join(', ')}<br>`;
+                    }
+                }
+            } catch (e) {
+                console.warn('Failed to load genres for promotion:', e);
+            }
+        }
+        
+        if (conditions.include_authors && conditions.include_authors.length > 0) {
+            try {
+                const response = await fetch('/api/authors');
+                if (response.ok) {
+                    const authors = await response.json();
+                    const authorNames = authors
+                        .filter(a => conditions.include_authors.includes(a.id))
+                        .map(a => a.name || a.full_name);
+                    if (authorNames.length > 0) {
+                        conditionsText += `Авторы: ${authorNames.join(', ')}`;
+                    }
+                }
+            } catch (e) {
+                console.warn('Failed to load authors for promotion:', e);
+            }
+        }
+    }
+    
     slide.innerHTML = `
         <h2 style="font-size: 2rem; margin-bottom: 1rem; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">${escapeHtml(promo.name)}</h2>
         <div style="font-size: 1.5rem; font-weight: bold; margin-bottom: 1rem; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">${discountText}</div>
+        ${conditionsText ? `<div style="font-size: 1rem; opacity: 0.9; text-shadow: 0 1px 2px rgba(0,0,0,0.5); margin-bottom: 0.5rem;">${conditionsText}</div>` : ''}
         <div style="font-size: 1rem; opacity: 0.9; text-shadow: 0 1px 2px rgba(0,0,0,0.5);">
             ${formatPromotionDates(promo.start_date, promo.end_date)}
         </div>
@@ -184,7 +225,7 @@ function startAutoplay(totalSlides) {
         
         carousel.addEventListener('mouseleave', () => {
             // Restart the interval
-            promoInterval = setInterval(autoplayFunction, 5000);
+            promoInterval = setInterval(autoplayFunction, 3000);
         });
     }
     
@@ -215,11 +256,11 @@ function startAutoplay(totalSlides) {
                 setTimeout(() => {
                     slidesContainer.style.transition = 'transform 0.8s ease-in-out';
                 }, 50);
-            }, 800);
+            }, 850);
         }
     };
     
-    promoInterval = setInterval(autoplayFunction, 5000); // Change slide every 5 seconds
+    promoInterval = setInterval(autoplayFunction, 3000); // Change slide every 3 seconds
 }
 
 function formatPromotionDates(startDate, endDate) {

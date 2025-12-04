@@ -3,6 +3,7 @@
 document.addEventListener('DOMContentLoaded', function() {
     try {
         buildHomepageRecommendations();
+        loadPromotionsCarousel();
     } catch (e) {
         console.error('Homepage init error:', e);
     }
@@ -113,9 +114,39 @@ function bookCard(book) {
     const defaultCover = 'https://i.pinimg.com/474x/e2/93/05/e29305e0ee7c3d1ef31ce6f234e194f8.jpg';
     const coverSrc = book.cover_image ? book.cover_image : defaultCover;
     const inStock = Number(book.stock_quantity || 0) > 0;
+    
+    // Add overlay for out of stock books
+    const overlay = !inStock ? `
+        <div style="
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(200, 200, 200, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            border-radius: 6px;
+            z-index: 10;
+        ">
+            <div style="
+                background-color: white;
+                padding: 8px 16px;
+                border-radius: 4px;
+                font-weight: bold;
+                margin-bottom: 20px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            ">
+                Нет в наличии
+            </div>
+        </div>
+    ` : '';
+    
     return `
-        <div class="reco-card" data-book-id="${book.id}">
+        <div class="reco-card" data-book-id="${book.id}" style="position: relative;">
             <img class="reco-cover" src="${coverSrc}" alt="Обложка ${safeTitle}" onerror="this.onerror=null;this.src='${defaultCover}';"/>
+            ${overlay}
             <div class="reco-title">${safeTitle}</div>
             <div class="reco-author">${safeAuthor}</div>
             <div class="reco-price">${priceText}</div>
