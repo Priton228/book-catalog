@@ -45,6 +45,14 @@ const {
   deleteGenre
 } = require('../controllers/genreController');
 
+const {
+  getAllPromotions,
+  createPromotion,
+  getPromotionById,
+  updatePromotion,
+  deletePromotion
+} = require('../controllers/promotionController');
+
 // Statistics
 router.get('/statistics', adminAuth, getStatistics);
 
@@ -82,5 +90,11 @@ router.get('/genres/:id', adminAuth, getGenreById);
 router.post('/genres', adminAuth, createGenre);
 router.put('/genres/:id', adminAuth, updateGenre);
 router.delete('/genres/:id', adminAuth, deleteGenre);
+
+router.get('/promotions', adminAuth, getAllPromotions);
+router.get('/promotions/:id', adminAuth, getPromotionById);
+router.post('/promotions', adminAuth, createPromotion);
+router.put('/promotions/:id', adminAuth, updatePromotion);
+router.delete('/promotions/:id', adminAuth, deletePromotion);
 
 module.exports = router;

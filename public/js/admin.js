@@ -80,6 +80,9 @@ function showSection(sectionId) {
             case 'genres':
                 loadGenres();
                 break;
+            case 'promotions':
+                loadPromotions();
+                break;
         }
     }
 }
@@ -1940,6 +1943,379 @@ function updateAuthorSelects(authors) {
         });
         if (current) sel.value = current;
     });
+}
+
+async function loadPromotions() {
+    try {
+        const token = localStorage.getItem('authToken');
+        const resp = await fetch('/api/admin/promotions', { headers: { 'Authorization': `Bearer ${token}` } });
+        const container = document.getElementById('promotions-table-container');
+        if (!container) return;
+        if (!resp.ok) {
+            container.innerHTML = '<div class="error">Ошибка загрузки акций</div>';
+            return;
+        }
+        const promos = await resp.json();
+        if (!Array.isArray(promos) || promos.length === 0) {
+            container.innerHTML = '<p>Нет акций</p>';
+            return;
+        }
+        const now = new Date();
+        const rows = promos.map(p => {
+            const active = Boolean(p.is_active) && (p.start_date ? new Date(p.start_date) <= now : true) && (p.end_date ? new Date(p.end_date) >= now : true);
+            return `
+            <tr>
+                <td>${p.id}</td>
+                <td>${p.name}</td>
+                <td>${p.discount_type === 'percent' ? (p.discount_value + '%') : (p.discount_value + ' р')}</td>
+                <td>${p.start_date ? new Date(p.start_date).toLocaleString('ru-RU') : ''}</td>
+                <td>${p.end_date ? new Date(p.end_date).toLocaleString('ru-RU') : ''}</td>
+                <td>${active ? 'Активна' : 'Неактивна'}</td>
+                <td>
+                    <button class="btn-small" onclick="showEditPromotionForm(${p.id})" style="background:#3498db;color:white">Редактировать</button>
+                    <button class="btn-small" onclick="deletePromotion(${p.id})" style="background:#e74c3c;color:white">Удалить</button>
+                </td>
+            </tr>
+        `}).join('');
+        container.innerHTML = `
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Название</th>
+                        <th>Скидка</th>
+                        <th>Начало</th>
+                        <th>Окончание</th>
+                        <th>Статус</th>
+                        <th>Действия</th>
+                    </tr>
+                </thead>
+                <tbody>${rows}</tbody>
+            </table>
+        `;
+    } catch (e) {
+        const container = document.getElementById('promotions-table-container');
+        if (container) container.innerHTML = '<div class="error">Ошибка загрузки акций</div>';
+    }
+}
+
+function showCreatePromotionForm() {
+    const form = document.getElementById('create-promotion-form');
+    if (form) {
+        form.style.display = 'block';
+        moveFormBeforeTable('create-promotion-form');
+        populatePromotionCheckboxes('promo');
+        initFilterDropdown('promo-genres-dropdown');
+        initFilterDropdown('promo-authors-dropdown');
+        initPromoValueHints();
+    }
+}
+
+function hideCreatePromotionForm() {
+    const form = document.getElementById('create-promotion-form');
+    if (form) form.style.display = 'none';
+}
+
+async function submitCreatePromotion() {
+    const name = document.getElementById('promo-name').value.trim();
+    const type = document.getElementById('promo-type').value;
+    const value = parseFloat(document.getElementById('promo-value').value);
+    const start = document.getElementById('promo-start').value;
+    const end = document.getElementById('promo-end').value;
+    const minTotal = parseFloat(document.getElementById('promo-min-total').value);
+    const genresList = document.getElementById('promo-genres-list');
+    const authorsList = document.getElementById('promo-authors-list');
+    const imageUrl = document.getElementById('promo-image-url') ? document.getElementById('promo-image-url').value.trim() : '';
+    const minItems = parseInt(document.getElementById('promo-min-items').value, 10);
+    if (!name || !type || !(value > 0) || !start) {
+        showMessage('Заполните обязательные поля: название, тип, значение скидки, дата начала', 'error');
+        return;
+    }
+    const conditions = {};
+    if (minTotal > 0) conditions.min_total_amount = minTotal;
+    const genres = Array.from(genresList.querySelectorAll('input[type="checkbox"]:checked')).map(i => parseInt(i.value, 10)).filter(n => !isNaN(n));
+    if (genres.length > 0) conditions.include_genres = genres;
+    const authors = Array.from(authorsList.querySelectorAll('input[type="checkbox"]:checked')).map(i => parseInt(i.value, 10)).filter(n => !isNaN(n));
+    if (authors.length > 0) conditions.include_authors = authors;
+    if (!isNaN(minItems) && minItems > 0) conditions.min_items = minItems;
+    try {
+        const token = localStorage.getItem('authToken');
+        const resp = await fetch('/api/admin/promotions', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify({
+                name,
+                discount_type: type,
+                discount_value: value,
+                start_date: start,
+                end_date: end || null,
+                conditions,
+                image_url: imageUrl || null
+            })
+        });
+        if (resp.ok) {
+            hideCreatePromotionForm();
+            showMessage('Акция создана', 'success');
+            loadPromotions();
+        } else {
+            const err = await resp.json().catch(() => ({}));
+            showMessage(err.error || 'Ошибка создания акции', 'error');
+        }
+    } catch (e) {
+        showMessage('Ошибка создания акции', 'error');
+    }
+}
+
+async function populatePromotionCheckboxes(prefix, preselected) {
+    try {
+        const [authorsResp, genresResp] = await Promise.all([
+            fetch('/api/authors'),
+            fetch('/api/genres')
+        ]);
+        const authorsData = await authorsResp.json();
+        const genresData = await genresResp.json();
+        const authorsList = document.getElementById(prefix + '-authors-list');
+        const genresList = document.getElementById(prefix + '-genres-list');
+        const selAuthors = (preselected && preselected.authors) ? new Set(preselected.authors.map(x=>String(x))) : new Set();
+        const selGenres = (preselected && preselected.genres) ? new Set(preselected.genres.map(x=>String(x))) : new Set();
+        if (authorsList && Array.isArray(authorsData)) {
+            authorsList.innerHTML = '';
+            authorsData.forEach(a => {
+                const id = a.id;
+                const name = a.name || a.full_name || '';
+                const label = document.createElement('label');
+                label.className = 'filter-item';
+                const cb = document.createElement('input');
+                cb.type = 'checkbox';
+                cb.value = id;
+                if (selAuthors.has(String(id))) cb.checked = true;
+                const text = document.createElement('span');
+                text.textContent = name;
+                label.appendChild(cb);
+                label.appendChild(text);
+                authorsList.appendChild(label);
+            });
+        }
+        if (genresList && Array.isArray(genresData)) {
+            genresList.innerHTML = '';
+            genresData.forEach(g => {
+                const id = g.id;
+                const name = g.name || '';
+                const label = document.createElement('label');
+                label.className = 'filter-item';
+                const cb = document.createElement('input');
+                cb.type = 'checkbox';
+                cb.value = id;
+                if (selGenres.has(String(id))) cb.checked = true;
+                const text = document.createElement('span');
+                text.textContent = name;
+                label.appendChild(cb);
+                label.appendChild(text);
+                genresList.appendChild(label);
+            });
+        }
+    } catch (e) {
+        console.warn('Populate promotion selects failed:', e);
+    }
+}
+
+function showEditPromotionForm(id) {
+    const form = document.getElementById('edit-promotion-form');
+    if (!form) return;
+    form.style.display = 'block';
+    form.dataset.promoId = String(id);
+    moveFormBeforeTable('edit-promotion-form');
+    loadPromotionToEdit(id);
+    initEditPromoValueHints();
+}
+
+function hideEditPromotionForm() {
+    const form = document.getElementById('edit-promotion-form');
+    if (form) form.style.display = 'none';
+}
+
+async function loadPromotionToEdit(id) {
+    try {
+        const token = localStorage.getItem('authToken');
+        const resp = await fetch(`/api/admin/promotions/${id}`, { headers: { 'Authorization': `Bearer ${token}` } });
+        if (!resp.ok) { showMessage('Ошибка загрузки акции', 'error'); return; }
+        const p = await resp.json();
+        document.getElementById('edit-promo-name').value = p.name || '';
+        document.getElementById('edit-promo-type').value = p.discount_type || 'percent';
+        document.getElementById('edit-promo-value').value = p.discount_value || 0;
+        document.getElementById('edit-promo-start').value = p.start_date ? new Date(p.start_date).toISOString().slice(0,16) : '';
+        document.getElementById('edit-promo-end').value = p.end_date ? new Date(p.end_date).toISOString().slice(0,16) : '';
+        const cond = p.conditions || {};
+        const imgInput = document.getElementById('edit-promo-image-url');
+        if (imgInput) imgInput.value = p.image_url || '';
+        const preselected = {
+            genres: Array.isArray(cond.include_genres) ? cond.include_genres : [],
+            authors: Array.isArray(cond.include_authors) ? cond.include_authors : []
+        };
+        populatePromotionCheckboxes('edit-promo', preselected);
+        initFilterDropdown('edit-promo-genres-dropdown');
+        initFilterDropdown('edit-promo-authors-dropdown');
+        document.getElementById('edit-promo-min-total').value = cond.min_total_amount || '';
+        document.getElementById('edit-promo-min-items').value = cond.min_items || '';
+    } catch (e) {
+        showMessage('Ошибка загрузки акции', 'error');
+    }
+}
+
+async function submitEditPromotion() {
+    const form = document.getElementById('edit-promotion-form');
+    const id = parseInt(form.dataset.promoId, 10);
+    const name = document.getElementById('edit-promo-name').value.trim();
+    const type = document.getElementById('edit-promo-type').value;
+    const value = parseFloat(document.getElementById('edit-promo-value').value);
+    const start = document.getElementById('edit-promo-start').value;
+    const end = document.getElementById('edit-promo-end').value;
+    const minTotal = parseFloat(document.getElementById('edit-promo-min-total').value);
+    const genresList = document.getElementById('edit-promo-genres-list');
+    const authorsList = document.getElementById('edit-promo-authors-list');
+    const imageUrl = document.getElementById('edit-promo-image-url') ? document.getElementById('edit-promo-image-url').value.trim() : '';
+    const minItems = parseInt(document.getElementById('edit-promo-min-items').value, 10);
+    if (!name || !type || !(value > 0) || !start) {
+        showMessage('Заполните обязательные поля: название, тип, значение скидки, дата начала', 'error');
+        return;
+    }
+    const conditions = {};
+    if (minTotal > 0) conditions.min_total_amount = minTotal;
+    const genres = Array.from(genresList.querySelectorAll('input[type="checkbox"]:checked')).map(i => parseInt(i.value, 10)).filter(n => !isNaN(n));
+    if (genres.length > 0) conditions.include_genres = genres;
+    const authors = Array.from(authorsList.querySelectorAll('input[type="checkbox"]:checked')).map(i => parseInt(i.value, 10)).filter(n => !isNaN(n));
+    if (authors.length > 0) conditions.include_authors = authors;
+    if (!isNaN(minItems) && minItems > 0) conditions.min_items = minItems;
+    try {
+        const token = localStorage.getItem('authToken');
+        const resp = await fetch(`/api/admin/promotions/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify({
+                name,
+                discount_type: type,
+                discount_value: value,
+                start_date: start,
+                end_date: end || null,
+                conditions,
+                image_url: imageUrl || null
+            })
+        });
+        if (resp.ok) {
+            hideEditPromotionForm();
+            showMessage('Акция обновлена', 'success');
+            loadPromotions();
+        } else {
+            const err = await resp.json().catch(() => ({}));
+            showMessage(err.error || 'Ошибка обновления акции', 'error');
+        }
+    } catch (e) {
+        showMessage('Ошибка обновления акции', 'error');
+    }
+}
+
+async function deletePromotion(id) {
+    if (!confirm('Удалить акцию?')) return;
+    try {
+        const token = localStorage.getItem('authToken');
+        const resp = await fetch(`/api/admin/promotions/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+        if (resp.ok) {
+            showMessage('Акция удалена', 'success');
+            loadPromotions();
+        } else {
+            const err = await resp.json().catch(() => ({}));
+            showMessage(err.error || 'Ошибка удаления акции', 'error');
+        }
+    } catch (e) {
+        showMessage('Ошибка удаления акции', 'error');
+    }
+}
+
+function initFilterDropdown(dropdownId) {
+    const dropdown = document.getElementById(dropdownId);
+    if (!dropdown) return;
+    const toggleBtn = dropdown.querySelector('.dropdown-toggle');
+    const menu = dropdown.querySelector('.filter-menu');
+    const searchInput = dropdown.querySelector('.filter-search-input');
+    const list = dropdown.querySelector('.filter-list');
+    if (toggleBtn && menu) {
+        toggleBtn.addEventListener('click', () => {
+            menu.style.display = (menu.style.display === 'none' || !menu.style.display) ? 'block' : 'none';
+        });
+        document.addEventListener('click', (e) => {
+            if (!dropdown.contains(e.target)) menu.style.display = 'none';
+        });
+    }
+    if (searchInput && list) {
+        searchInput.addEventListener('input', () => {
+            const q = searchInput.value.toLowerCase();
+            list.querySelectorAll('label').forEach(label => {
+                const text = label.textContent.toLowerCase();
+                label.style.display = text.includes(q) ? 'block' : 'none';
+            });
+        });
+    }
+    if (list && toggleBtn) {
+        list.addEventListener('change', () => updateDropdownSummary(dropdownId));
+        updateDropdownSummary(dropdownId);
+    }
+}
+
+function updateDropdownSummary(dropdownId) {
+    const dropdown = document.getElementById(dropdownId);
+    if (!dropdown) return;
+    const toggleBtn = dropdown.querySelector('.dropdown-toggle');
+    const list = dropdown.querySelector('.filter-list');
+    if (!toggleBtn || !list) return;
+    const checked = Array.from(list.querySelectorAll('input[type="checkbox"]:checked'));
+    if (checked.length === 0) {
+        toggleBtn.textContent = toggleBtn.id && toggleBtn.id.includes('authors') ? 'Выбрать авторов' : (toggleBtn.id && toggleBtn.id.includes('genres') ? 'Выбрать жанры' : 'Выбрать');
+        return;
+    }
+    const names = checked.map(cb => cb.parentElement.querySelector('span')?.textContent || '').filter(Boolean);
+    const preview = names.slice(0, 3).join(', ');
+    const suffix = names.length > 3 ? ` и ещё ${names.length - 3}` : '';
+    toggleBtn.textContent = `Выбрано: ${preview}${suffix}`;
+}
+
+function initPromoValueHints() {
+    const t = document.getElementById('promo-type');
+    const v = document.getElementById('promo-value');
+    if (!t || !v) return;
+    const apply = () => {
+        if (t.value === 'percent') {
+            v.step = '1';
+            v.min = '0';
+            v.max = '100';
+        } else {
+            v.step = '0.01';
+            v.min = '0';
+            v.removeAttribute('max');
+        }
+    };
+    apply();
+    t.addEventListener('change', apply);
+}
+
+function initEditPromoValueHints() {
+    const t = document.getElementById('edit-promo-type');
+    const v = document.getElementById('edit-promo-value');
+    if (!t || !v) return;
+    const apply = () => {
+        if (t.value === 'percent') {
+            v.step = '1';
+            v.placeholder = 'Напр. 20';
+            v.min = '0';
+            v.max = '100';
+        } else {
+            v.step = '0.01';
+            v.placeholder = 'Напр. 100.00';
+            v.min = '0';
+            v.removeAttribute('max');
+        }
+    };
+    apply();
+    t.addEventListener('change', apply);
 }
 
 function updateGenreSelects(genres) {

@@ -139,6 +139,28 @@ async function initializeDatabase() {
         `);
         console.log('✅ Таблица order_items создана');
 
+        await dbClient.query(`
+            CREATE TABLE IF NOT EXISTS promotions (
+                id SERIAL PRIMARY KEY,
+                name VARCHAR(255) NOT NULL,
+                discount_type VARCHAR(20) NOT NULL CHECK (discount_type IN ('percent','fixed')),
+                discount_value DECIMAL(10,2) NOT NULL,
+                conditions JSONB DEFAULT '{}'::jsonb,
+                start_date TIMESTAMP NOT NULL,
+                end_date TIMESTAMP,
+                is_active BOOLEAN DEFAULT TRUE,
+                image_url VARCHAR(500),
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+        console.log('✅ Таблица promotions создана');
+
+        // Дополнительные колонки для существующих БД
+        await dbClient.query('ALTER TABLE promotions ADD COLUMN IF NOT EXISTS image_url VARCHAR(500)');
+        await dbClient.query('ALTER TABLE orders ADD COLUMN IF NOT EXISTS promotion_id INTEGER REFERENCES promotions(id)');
+        await dbClient.query('ALTER TABLE orders ADD COLUMN IF NOT EXISTS promotion_discount DECIMAL(10,2) DEFAULT 0');
+
         // Создаем индексы
         console.log('📈 Создаем индексы...');
         
@@ -148,6 +170,8 @@ async function initializeDatabase() {
         await dbClient.query('CREATE INDEX IF NOT EXISTS idx_orders_user ON orders(user_id)');
         await dbClient.query('CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status)');
         await dbClient.query('CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)');
+        await dbClient.query("CREATE INDEX IF NOT EXISTS idx_promotions_active ON promotions(is_active)");
+        await dbClient.query("CREATE INDEX IF NOT EXISTS idx_promotions_dates ON promotions(start_date, end_date)");
 
         console.log('🎉 База данных успешно инициализирована!');
         console.log('📊 Созданы все таблицы и индексы');

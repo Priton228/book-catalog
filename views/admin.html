@@ -217,6 +217,7 @@
             <button onclick="showSection('books')" id="nav-books">Книги</button>
             <button onclick="showSection('authors')" id="nav-authors">Авторы</button>
             <button onclick="showSection('genres')" id="nav-genres">Жанры</button>
+            <button onclick="showSection('promotions')" id="nav-promotions">Акции</button>
             <button onclick="showSection('orders')" id="nav-orders">Заказы</button>
             <button onclick="logout()" id="nav-logout">Выход</button>
         </nav>
@@ -411,6 +412,91 @@
                         <button onclick="submitEditAuthor()" class="btn-small" style="background:#27ae60;color:white">Сохранить</button>
                         <button onclick="hideEditAuthorForm()" class="btn-small" style="background:#95a5a6;color:white">Отмена</button>
                     </div>
+                </div>
+            </div>
+
+            <div id="promotions-section" class="admin-section hidden">
+                <h2>Акции</h2>
+                <button onclick="showCreatePromotionForm()" class="btn-create">Добавить акцию</button>
+                <div id="create-promotion-form" class="admin-form">
+                    <h3>Новая акция</h3>
+                    <div class="form-group"><label>Название:</label><input type="text" id="promo-name" required></div>
+                    <div class="form-group"><label>Тип скидки:</label>
+                        <select id="promo-type">
+                            <option value="percent">Процент</option>
+                            <option value="fixed">Фиксированная сумма</option>
+                        </select>
+                    </div>
+                    <div class="form-group"><label>Значение скидки:</label><input type="number" step="0.01" id="promo-value" required></div>
+                    <div class="form-group"><label>Дата начала:</label><input type="datetime-local" id="promo-start" required></div>
+                    <div class="form-group"><label>Дата окончания:</label><input type="datetime-local" id="promo-end"></div>
+                    <div class="form-group"><label>Мин. сумма заказа:</label><input type="number" step="0.01" id="promo-min-total"></div>
+                    <div class="form-group"><label>URL изображения акции:</label><input type="url" id="promo-image-url" placeholder="https://..."></div>
+                    <div class="form-group"><label>Жанры:</label>
+                        <div id="promo-genres-dropdown" class="filter-dropdown">
+                            <button type="button" class="dropdown-toggle">Выбрать жанры</button>
+                            <div class="filter-menu" style="display:none">
+                                <div class="filter-search"><input type="text" class="filter-search-input" placeholder="Поиск жанра"></div>
+                                <div class="filter-list" id="promo-genres-list"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group"><label>Авторы:</label>
+                        <div id="promo-authors-dropdown" class="filter-dropdown">
+                            <button type="button" class="dropdown-toggle">Выбрать авторов</button>
+                            <div class="filter-menu" style="display:none">
+                                <div class="filter-search"><input type="text" class="filter-search-input" placeholder="Поиск автора"></div>
+                                <div class="filter-list" id="promo-authors-list"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group"><label>Мин. количество товаров:</label><input type="number" id="promo-min-items"></div>
+                    <div class="form-actions">
+                        <button onclick="submitCreatePromotion()" class="btn-small" style="background:#27ae60;color:white">Создать</button>
+                        <button onclick="hideCreatePromotionForm()" class="btn-small" style="background:#95a5a6;color:white">Отмена</button>
+                    </div>
+                </div>
+
+                <div id="edit-promotion-form" class="admin-form" style="display:none" data-promo-id="">
+                    <h3>Редактировать акцию</h3>
+                    <div class="form-group"><label>Название:</label><input type="text" id="edit-promo-name" required></div>
+                    <div class="form-group"><label>Тип скидки:</label>
+                        <select id="edit-promo-type">
+                            <option value="percent">Процент</option>
+                            <option value="fixed">Фиксированная сумма</option>
+                        </select>
+                    </div>
+                    <div class="form-group"><label>Значение скидки:</label><input type="number" step="0.01" id="edit-promo-value" required></div>
+                    <div class="form-group"><label>Дата начала:</label><input type="datetime-local" id="edit-promo-start" required></div>
+                    <div class="form-group"><label>Дата окончания:</label><input type="datetime-local" id="edit-promo-end"></div>
+                    <div class="form-group"><label>Мин. сумма заказа:</label><input type="number" step="0.01" id="edit-promo-min-total"></div>
+                    <div class="form-group"><label>URL изображения акции:</label><input type="url" id="edit-promo-image-url" placeholder="https://..."></div>
+                    <div class="form-group"><label>Жанры:</label>
+                        <div id="edit-promo-genres-dropdown" class="filter-dropdown">
+                            <button type="button" class="dropdown-toggle">Выбрать жанры</button>
+                            <div class="filter-menu" style="display:none">
+                                <div class="filter-search"><input type="text" class="filter-search-input" placeholder="Поиск жанра"></div>
+                                <div class="filter-list" id="edit-promo-genres-list"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group"><label>Авторы:</label>
+                        <div id="edit-promo-authors-dropdown" class="filter-dropdown">
+                            <button type="button" class="dropdown-toggle">Выбрать авторов</button>
+                            <div class="filter-menu" style="display:none">
+                                <div class="filter-search"><input type="text" class="filter-search-input" placeholder="Поиск автора"></div>
+                                <div class="filter-list" id="edit-promo-authors-list"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group"><label>Мин. количество товаров:</label><input type="number" id="edit-promo-min-items"></div>
+                    <div class="form-actions">
+                        <button onclick="submitEditPromotion()" class="btn-small" style="background:#27ae60;color:white">Сохранить</button>
+                        <button onclick="hideEditPromotionForm()" class="btn-small" style="background:#95a5a6;color:white">Отмена</button>
+                    </div>
+                </div>
+                <div id="promotions-table-container">
+                    <div class="loading">Загрузка акций...</div>
                 </div>
             </div>
 

@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿// Загрузка заказов при открытии страницы
+﻿﻿﻿﻿// Загрузка заказов при открытии страницы
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Orders page loaded');
     initializeOrdersEventListeners();
@@ -111,6 +111,7 @@ function displayOrders(orders) {
                     <h3>Заказ #${order.id}</h3>
                     <div class="order-date">${new Date(order.created_at).toLocaleDateString('ru-RU')} ${new Date(order.created_at).toLocaleTimeString('ru-RU')}</div>
                     <div class="order-amount">Сумма: ${order.total_amount} р</div>
+                    ${order.promotion_discount && Number(order.promotion_discount) > 0 ? `<div class="order-promo">Скидка по акции${order.promotion_name ? ` "${escapeHtml(order.promotion_name)}"` : ''}: -${Number(order.promotion_discount).toFixed(2)} р</div>` : ''}
                 </div>
                 <div class="order-status order-status-${order.status}">
                     ${getStatusText(order.status)}
