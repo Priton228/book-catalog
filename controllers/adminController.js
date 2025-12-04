@@ -215,11 +215,13 @@ const getAllOrders = async (req, res) => {
         o.*,
         u.email as user_email,
         u.full_name as user_name,
+        p.name as promotion_name,
         COUNT(oi.id) as items_count
       FROM orders o
       LEFT JOIN users u ON o.user_id = u.id
+      LEFT JOIN promotions p ON o.promotion_id = p.id
       LEFT JOIN order_items oi ON o.id = oi.order_id
-      GROUP BY o.id, u.email, u.full_name
+      GROUP BY o.id, u.email, u.full_name, p.name
       ORDER BY o.created_at DESC
     `;
     const result = await pool.query(query);

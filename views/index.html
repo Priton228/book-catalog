@@ -32,11 +32,12 @@
 
     <main class="main">
         <div class="container">
-            <section id="promotions" style="text-align:center; margin-bottom: 1rem;">
-                <div id="promotions-carousel" style="position:relative; max-width: 100%; margin: 0 auto;">
-                    <div id="promotions-slides"></div>
-                </div>
+            <!-- Promotions Carousel -->
+            <section id="promotions-carousel" style="margin-bottom: 2rem;">
+                <div id="promotions-container" style="display: flex; gap: 1rem; overflow-x: auto; padding: 1rem 0;"></div>
             </section>
+            
+            <!-- Recommendations Section -->
             <section id="recommendations">
                 <h2 id="reco-title">Рекомендации по жанрам</h2>
                 <div id="reco-container"></div>
@@ -107,7 +108,7 @@
             <h3>Корзина покупок</h3>
             <div id="cart-items"></div>
             <div class="cart-total">
-                <strong>Итого: <span id="cart-total">0 р</span></strong>
+                <strong>Итого: <span id="cart-total">0 ₽</span></strong>
             </div>
             <div class="cart-actions">
                 <button id="checkout-btn" class="btn btn-primary">Оформить заказ</button>
@@ -137,7 +138,8 @@
 
     <script src="/js/auth.js"></script>
     <script src="/js/cart.js"></script>
-    <script src="/js/main.js"></script>
+    <script src="/js/promotions.js"></script>
     <script src="/js/homepage.js"></script>
+    <script src="/js/main.js"></script>
 </body>
 </html>

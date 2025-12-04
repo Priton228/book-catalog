@@ -2,7 +2,6 @@
 
 document.addEventListener('DOMContentLoaded', function() {
     try {
-        buildPromotionsCarousel();
         buildHomepageRecommendations();
     } catch (e) {
         console.error('Homepage init error:', e);
@@ -156,13 +155,6 @@ function attachRowHandlers(row) {
 function injectHomepageStyles() {
     const style = document.createElement('style');
     style.textContent = `
-    #promotions { text-align: center; }
-    #promotions-carousel { width: 100%; max-width: 960px; margin: 0 auto; }
-    #promotions-slides { position: relative; overflow: hidden; min-height: 180px; }
-    .promo-slide { position: absolute; left: 0; right: 0; top: 0; bottom: 0; display: none; align-items: center; justify-content: center; }
-    .promo-slide.active { display: flex; }
-    .promo-img { max-width: 100%; max-height: 280px; object-fit: cover; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
-    .promo-caption { margin-top: 0.5rem; color: #2c3e50; }
     #recommendations { margin-bottom: 2rem; }
     #recommendations .reco-row { margin-bottom: 1.5rem; padding: 1rem; border: 1px solid #e5e7eb; border-radius: 10px; background: #fff; }
     #recommendations .reco-header { display: flex; align-items: center; justify-content: flex-start; margin-bottom: 0.75rem; padding-bottom: 0.5rem; }
@@ -176,43 +168,6 @@ function injectHomepageStyles() {
     #recommendations .reco-actions { display: flex; justify-content: center; }
     `;
     document.head.appendChild(style);
-}
-
-async function buildPromotionsCarousel() {
-    const slidesEl = document.getElementById('promotions-slides');
-    if (!slidesEl) return;
-    try {
-        const resp = await fetch('/api/promotions/active');
-        const promos = await resp.json();
-        if (!resp.ok || !Array.isArray(promos) || promos.length === 0) {
-            slidesEl.innerHTML = '';
-            return;
-        }
-        const slides = promos
-            .filter(p => !!p.image_url)
-            .map(p => {
-                const div = document.createElement('div');
-                div.className = 'promo-slide';
-                div.innerHTML = `
-                    <div>
-                        <img class="promo-img" src="${p.image_url}" alt="${escapeHtml(p.name || 'Акция')}" onerror="this.style.display='none'" />
-                        <div class="promo-caption">${escapeHtml(p.name || '')}</div>
-                    </div>
-                `;
-                return div;
-            });
-        slides.forEach(s => slidesEl.appendChild(s));
-        if (slides.length === 0) return;
-        let idx = 0;
-        slides[idx].classList.add('active');
-        setInterval(() => {
-            slides[idx].classList.remove('active');
-            idx = (idx + 1) % slides.length;
-            slides[idx].classList.add('active');
-        }, 3000);
-    } catch (e) {
-        console.warn('Promotions carousel init failed:', e);
-    }
 }
 
 function escapeHtml(unsafe) {

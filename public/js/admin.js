@@ -2020,12 +2020,12 @@ async function submitCreatePromotion() {
     const name = document.getElementById('promo-name').value.trim();
     const type = document.getElementById('promo-type').value;
     const value = parseFloat(document.getElementById('promo-value').value);
+    const imageUrl = document.getElementById('promo-image-url').value.trim();
     const start = document.getElementById('promo-start').value;
     const end = document.getElementById('promo-end').value;
     const minTotal = parseFloat(document.getElementById('promo-min-total').value);
     const genresList = document.getElementById('promo-genres-list');
     const authorsList = document.getElementById('promo-authors-list');
-    const imageUrl = document.getElementById('promo-image-url') ? document.getElementById('promo-image-url').value.trim() : '';
     const minItems = parseInt(document.getElementById('promo-min-items').value, 10);
     if (!name || !type || !(value > 0) || !start) {
         showMessage('Заполните обязательные поля: название, тип, значение скидки, дата начала', 'error');
@@ -2047,10 +2047,10 @@ async function submitCreatePromotion() {
                 name,
                 discount_type: type,
                 discount_value: value,
+                image_url: imageUrl || null,
                 start_date: start,
                 end_date: end || null,
-                conditions,
-                image_url: imageUrl || null
+                conditions
             })
         });
         if (resp.ok) {
@@ -2143,11 +2143,10 @@ async function loadPromotionToEdit(id) {
         document.getElementById('edit-promo-name').value = p.name || '';
         document.getElementById('edit-promo-type').value = p.discount_type || 'percent';
         document.getElementById('edit-promo-value').value = p.discount_value || 0;
+        document.getElementById('edit-promo-image-url').value = p.image_url || '';
         document.getElementById('edit-promo-start').value = p.start_date ? new Date(p.start_date).toISOString().slice(0,16) : '';
         document.getElementById('edit-promo-end').value = p.end_date ? new Date(p.end_date).toISOString().slice(0,16) : '';
         const cond = p.conditions || {};
-        const imgInput = document.getElementById('edit-promo-image-url');
-        if (imgInput) imgInput.value = p.image_url || '';
         const preselected = {
             genres: Array.isArray(cond.include_genres) ? cond.include_genres : [],
             authors: Array.isArray(cond.include_authors) ? cond.include_authors : []
@@ -2168,12 +2167,12 @@ async function submitEditPromotion() {
     const name = document.getElementById('edit-promo-name').value.trim();
     const type = document.getElementById('edit-promo-type').value;
     const value = parseFloat(document.getElementById('edit-promo-value').value);
+    const imageUrl = document.getElementById('edit-promo-image-url').value.trim();
     const start = document.getElementById('edit-promo-start').value;
     const end = document.getElementById('edit-promo-end').value;
     const minTotal = parseFloat(document.getElementById('edit-promo-min-total').value);
     const genresList = document.getElementById('edit-promo-genres-list');
     const authorsList = document.getElementById('edit-promo-authors-list');
-    const imageUrl = document.getElementById('edit-promo-image-url') ? document.getElementById('edit-promo-image-url').value.trim() : '';
     const minItems = parseInt(document.getElementById('edit-promo-min-items').value, 10);
     if (!name || !type || !(value > 0) || !start) {
         showMessage('Заполните обязательные поля: название, тип, значение скидки, дата начала', 'error');
@@ -2195,10 +2194,10 @@ async function submitEditPromotion() {
                 name,
                 discount_type: type,
                 discount_value: value,
+                image_url: imageUrl || null,
                 start_date: start,
                 end_date: end || null,
-                conditions,
-                image_url: imageUrl || null
+                conditions
             })
         });
         if (resp.ok) {

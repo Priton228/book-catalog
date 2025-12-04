@@ -1,6 +1,7 @@
 ﻿﻿﻿﻿// Загрузка заказов при открытии страницы
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Orders page loaded');
+    injectOrdersStyles();
     initializeOrdersEventListeners();
     checkAuthAndLoadOrders();
 });
@@ -104,6 +105,15 @@ function displayOrders(orders) {
             ? `<div class="order-notes"><strong>Комментарий:</strong> ${escapeHtml(order.customer_notes)}</div>`
             : '';
         const defaultCover = 'https://i.pinimg.com/474x/e2/93/05/e29305e0ee7c3d1ef31ce6f234e194f8.jpg';
+        const discountLine = order.applied_discount && order.applied_discount > 0
+            ? `<div class="order-discount"><strong>Применена скидка:</strong> ${parseFloat(order.applied_discount).toFixed(2)} р</div>`
+            : '';
+        const promotionLine = order.promotion_name
+            ? `<div class="order-promotion"><strong>Акция:</strong> ${escapeHtml(order.promotion_name)}${order.promotion_discount_type ? ` (${order.promotion_discount_type === 'percent' ? order.promotion_discount_value + '%' : order.promotion_discount_value + ' р'})` : ''}</div>`
+            : '';
+        const totalAmountLine = order.applied_discount && order.applied_discount > 0
+            ? `<div class="order-total"><strong>Итого со скидкой:</strong> ${parseFloat(order.total_amount).toFixed(2)} р</div>`
+            : '';
         return `
         <div class="order-card">
             <div class="order-header">
@@ -111,7 +121,6 @@ function displayOrders(orders) {
                     <h3>Заказ #${order.id}</h3>
                     <div class="order-date">${new Date(order.created_at).toLocaleDateString('ru-RU')} ${new Date(order.created_at).toLocaleTimeString('ru-RU')}</div>
                     <div class="order-amount">Сумма: ${order.total_amount} р</div>
-                    ${order.promotion_discount && Number(order.promotion_discount) > 0 ? `<div class="order-promo">Скидка по акции${order.promotion_name ? ` "${escapeHtml(order.promotion_name)}"` : ''}: -${Number(order.promotion_discount).toFixed(2)} р</div>` : ''}
                 </div>
                 <div class="order-status order-status-${order.status}">
                     ${getStatusText(order.status)}
@@ -143,6 +152,9 @@ function displayOrders(orders) {
                 ${shippingMethodLine}
                 ${paymentLine}
                 ${commentLine}
+                ${promotionLine}
+                ${discountLine}
+                ${totalAmountLine}
             </div>
         </div>
         `;
@@ -166,4 +178,31 @@ function getStatusText(status) {
 // Инициализация обработчиков событий
 function initializeOrdersEventListeners() {
     console.log('Initializing orders event listeners');
+}
+
+// Inject required styles
+function injectOrdersStyles() {
+    if (document.getElementById('orders-styles')) return;
+    
+    const style = document.createElement('style');
+    style.id = 'orders-styles';
+    style.textContent = `
+        .order-discount, .order-promotion, .order-total {
+            margin-top: 5px;
+            padding: 5px;
+            background-color: #e8f5e9;
+            border-left: 3px solid #4caf50;
+            font-size: 0.9em;
+        }
+        .order-promotion {
+            background-color: #fff3e0;
+            border-left: 3px solid #ff9800;
+        }
+        .order-total {
+            background-color: #e3f2fd;
+            border-left: 3px solid #2196f3;
+            font-weight: bold;
+        }
+    `;
+    document.head.appendChild(style);
 }

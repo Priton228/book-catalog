@@ -85,6 +85,33 @@ const getPopularBooks = async (req, res) => {
   }
 };
 
+const getActivePromotions = async (req, res) => {
+  try {
+    const now = new Date();
+    const result = await pool.query(
+      `SELECT id, name, discount_type, discount_value, image_url, start_date, end_date 
+       FROM promotions 
+       WHERE is_active = true 
+         AND start_date <= $1 
+         AND (end_date IS NULL OR end_date >= $1)
+       ORDER BY created_at DESC`,
+      [now]
+    );
+    
+    // Filter promotions that are actually active based on dates
+    const activePromotions = result.rows.filter(p => {
+      const startDate = new Date(p.start_date);
+      const endDate = p.end_date ? new Date(p.end_date) : null;
+      return startDate <= now && (!endDate || endDate >= now);
+    });
+    
+    res.json(activePromotions);
+  } catch (error) {
+    console.error('Get active promotions error:', error);
+    res.status(500).json({ error: 'Ошибка при получении акций' });
+  }
+};
+
 const getBookById = async (req, res) => {
   try {
     const book = await pool.query(`
@@ -112,5 +139,6 @@ const getBookById = async (req, res) => {
 module.exports = {
   getAllBooks,
   getBookById,
-  getPopularBooks
+  getPopularBooks,
+  getActivePromotions
 };
